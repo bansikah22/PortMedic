@@ -50,9 +50,13 @@ enum CommandRunner {
                 // stall the child while we are reading the other.
                 let stderrQueue = DispatchQueue(label: "com.portmedic.command.stderr")
                 var stderrData = Data()
+                let stderrLock = NSLock()
                 let stderrDone = DispatchSemaphore(value: 0)
                 stderrQueue.async {
-                    stderrData = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+                    let drainedStderr = stderrPipe.fileHandleForReading.readDataToEndOfFile()
+                    stderrLock.lock()
+                    stderrData = drainedStderr
+                    stderrLock.unlock()
                     stderrDone.signal()
                 }
 
@@ -60,10 +64,14 @@ enum CommandRunner {
                 stderrDone.wait()
                 process.waitUntilExit()
 
+                stderrLock.lock()
+                let finalStderrData = stderrData
+                stderrLock.unlock()
+
                 continuation.resume(
                     returning: CommandResult(
                         standardOutput: String(bytes: stdoutData, encoding: .utf8) ?? "",
-                        standardError: String(bytes: stderrData, encoding: .utf8) ?? "",
+                        standardError: String(bytes: finalStderrData, encoding: .utf8) ?? "",
                         exitCode: process.terminationStatus
                     )
                 )

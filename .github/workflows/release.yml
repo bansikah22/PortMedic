@@ -33,11 +33,24 @@ jobs:
           ref: ${{ github.event.inputs.tag || github.ref }}
 
       - name: Select Xcode
-        run: sudo xcode-select --switch /Applications/Xcode_16.4.app
+        run: |
+          XCODE_PATH="/Applications/Xcode_16.4.app"
+          if [ ! -d "$XCODE_PATH" ]; then
+            echo "Error: Xcode 16.4 not found at $XCODE_PATH"
+            ls /Applications | grep "Xcode" || true
+            exit 1
+          fi
+          sudo xcode-select --switch "$XCODE_PATH"
 
       - name: Resolve version
         id: version
-        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            VERSION="${{ github.event.inputs.tag }}"
+          else
+            VERSION="${GITHUB_REF_NAME}"
+          fi
+          echo "value=${VERSION#v}" >> "$GITHUB_OUTPUT"
 
       # Unsigned build: distributing a signed and notarised app requires a
       # Developer ID certificate, which must be supplied as repository secrets.

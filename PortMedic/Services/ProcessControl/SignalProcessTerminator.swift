@@ -23,7 +23,7 @@ struct SignalProcessTerminator: ProcessTerminating {
     /// signal, and any other negative value signals a whole process group.
     /// Scanned PIDs must never be able to reach those paths.
     static func isSafeTarget(_ pid: pid_t) -> Bool {
-        pid > 1 && pid != getpid()
+        pid > 0 && pid != 1 && pid != getpid()
     }
 
     private func send(signal: Int32, to pid: pid_t) throws {
