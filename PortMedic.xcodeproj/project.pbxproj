@@ -6,13 +6,39 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		7891476900E261C3AE32ED63 /* HeuristicFrameworkDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304D1979E8CC92F65AF46E1C /* HeuristicFrameworkDetectorTests.swift */; };
+		B484A075DCE2220E853313B2 /* SettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE879BE50CC1F982C24C5C1 /* SettingsViewModelTests.swift */; };
+		C154B39342A6177822DFF902 /* LsofOutputParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746D3D1A48A828A89BBBA66B /* LsofOutputParserTests.swift */; };
+		C893F5F439E35D0D56747D5D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD267880531D295C78B1D37F /* Cocoa.framework */; };
+		D2492D3FA8B02DE307CAD592 /* PortListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC1371290DC30961733CF933 /* PortListViewModelTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AE60C50E5195A0FBC543C478 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1520D880303CA4A000698CD6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1520D887303CA4A000698CD6;
+			remoteInfo = PortMedic;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		1520D888303CA4A000698CD6 /* PortMedic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PortMedic.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1DE879BE50CC1F982C24C5C1 /* SettingsViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SettingsViewModelTests.swift; sourceTree = "<group>"; };
+		304D1979E8CC92F65AF46E1C /* HeuristicFrameworkDetectorTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HeuristicFrameworkDetectorTests.swift; sourceTree = "<group>"; };
+		331E05ED0670B582317AF135 /* PortMedicTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PortMedicTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		746D3D1A48A828A89BBBA66B /* LsofOutputParserTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LsofOutputParserTests.swift; sourceTree = "<group>"; };
+		CD267880531D295C78B1D37F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
+		EC1371290DC30961733CF933 /* PortListViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PortListViewModelTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1520D88A303CA4A000698CD6 /* PortMedic */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = PortMedic;
 			sourceTree = "<group>";
 		};
@@ -26,14 +52,35 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DA7A3D83DA92C239F65720F9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C893F5F439E35D0D56747D5D /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		11A577FD3CC648C2DB09774E /* PortMedicTests */ = {
+			isa = PBXGroup;
+			children = (
+				746D3D1A48A828A89BBBA66B /* LsofOutputParserTests.swift */,
+				EC1371290DC30961733CF933 /* PortListViewModelTests.swift */,
+				304D1979E8CC92F65AF46E1C /* HeuristicFrameworkDetectorTests.swift */,
+				1DE879BE50CC1F982C24C5C1 /* SettingsViewModelTests.swift */,
+			);
+			path = PortMedicTests;
+			sourceTree = "<group>";
+		};
 		1520D87F303CA4A000698CD6 = {
 			isa = PBXGroup;
 			children = (
 				1520D88A303CA4A000698CD6 /* PortMedic */,
 				1520D889303CA4A000698CD6 /* Products */,
+				11A577FD3CC648C2DB09774E /* PortMedicTests */,
+				86464BFFC11AF21773805D48 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -41,8 +88,25 @@
 			isa = PBXGroup;
 			children = (
 				1520D888303CA4A000698CD6 /* PortMedic.app */,
+				331E05ED0670B582317AF135 /* PortMedicTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		86464BFFC11AF21773805D48 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A65A1DB19FC600DDC81F930E /* OS X */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A65A1DB19FC600DDC81F930E /* OS X */ = {
+			isa = PBXGroup;
+			children = (
+				CD267880531D295C78B1D37F /* Cocoa.framework */,
+			);
+			name = "OS X";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -64,11 +128,27 @@
 				1520D88A303CA4A000698CD6 /* PortMedic */,
 			);
 			name = PortMedic;
-			packageProductDependencies = (
-			);
 			productName = PortMedic;
 			productReference = 1520D888303CA4A000698CD6 /* PortMedic.app */;
 			productType = "com.apple.product-type.application";
+		};
+		AEF6AA60C22C3661F6D8D948 /* PortMedicTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6A326729B9A7BECDB5B881A4 /* Build configuration list for PBXNativeTarget "PortMedicTests" */;
+			buildPhases = (
+				108E30A2F36165C5664EC94D /* Sources */,
+				DA7A3D83DA92C239F65720F9 /* Frameworks */,
+				34C890678FD572CA4DFE8005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6692462964B41F435E2ECCFB /* PBXTargetDependency */,
+			);
+			name = PortMedicTests;
+			productName = PortMedicTests;
+			productReference = 331E05ED0670B582317AF135 /* PortMedicTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -100,6 +180,7 @@
 			projectRoot = "";
 			targets = (
 				1520D887303CA4A000698CD6 /* PortMedic */,
+				AEF6AA60C22C3661F6D8D948 /* PortMedicTests */,
 			);
 		};
 /* End PBXProject section */
@@ -112,9 +193,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		34C890678FD572CA4DFE8005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		108E30A2F36165C5664EC94D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C154B39342A6177822DFF902 /* LsofOutputParserTests.swift in Sources */,
+				D2492D3FA8B02DE307CAD592 /* PortListViewModelTests.swift in Sources */,
+				7891476900E261C3AE32ED63 /* HeuristicFrameworkDetectorTests.swift in Sources */,
+				B484A075DCE2220E853313B2 /* SettingsViewModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1520D884303CA4A000698CD6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,7 +223,32 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		6692462964B41F435E2ECCFB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = PortMedic;
+			target = 1520D887303CA4A000698CD6 /* PortMedic */;
+			targetProxy = AE60C50E5195A0FBC543C478 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		00306898B28EFD078030C50D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = R824A3FJ74;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				PRODUCT_BUNDLE_IDENTIFIER = bansikah.PortMedicTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PortMedic.app/Contents/MacOS/PortMedic";
+			};
+			name = Debug;
+		};
 		1520D892303CA4A100698CD6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -299,6 +423,22 @@
 			};
 			name = Release;
 		};
+		2E52E3771B28BB8FAF5360FF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = R824A3FJ74;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
+				PRODUCT_BUNDLE_IDENTIFIER = bansikah.PortMedicTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PortMedic.app/Contents/MacOS/PortMedic";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -316,6 +456,15 @@
 			buildConfigurations = (
 				1520D895303CA4A100698CD6 /* Debug */,
 				1520D896303CA4A100698CD6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6A326729B9A7BECDB5B881A4 /* Build configuration list for PBXNativeTarget "PortMedicTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2E52E3771B28BB8FAF5360FF /* Release */,
+				00306898B28EFD078030C50D /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
