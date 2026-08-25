@@ -27,15 +27,19 @@ private final class FakeProcessTerminator: ProcessTerminating, @unchecked Sendab
     private(set) var terminatedPIDs: [pid_t] = []
     private(set) var forceTerminatedPIDs: [pid_t] = []
     var errorToThrow: Error?
+    /// Lets a test model the port actually being released by the signal.
+    var onSignal: (() -> Void)?
 
     func terminate(pid: pid_t) throws {
         if let errorToThrow { throw errorToThrow }
         terminatedPIDs.append(pid)
+        onSignal?()
     }
 
     func forceTerminate(pid: pid_t) throws {
         if let errorToThrow { throw errorToThrow }
         forceTerminatedPIDs.append(pid)
+        onSignal?()
     }
 }
 
@@ -111,7 +115,7 @@ final class PortListViewModelTests: XCTestCase {
         viewModel.requestKill(target)
         XCTAssertEqual(viewModel.pendingKillTarget, target)
 
-        scanner.portsToReturn = []
+        terminator.onSignal = { scanner.portsToReturn = [] }
         await viewModel.confirmKill()
 
         // The default kill action sends SIGKILL directly, since supervised
@@ -132,11 +136,28 @@ final class PortListViewModelTests: XCTestCase {
 
         viewModel.requestKill(target)
         viewModel.cancelPendingKill()
-        scanner.portsToReturn = []
+        terminator.onSignal = { scanner.portsToReturn = [] }
         await viewModel.kill(target)
 
         XCTAssertEqual(terminator.forceTerminatedPIDs, [32018])
         XCTAssertNil(viewModel.errorMessage)
+    }
+
+    func test_kill_doesNotSignalWhenTargetNoLongerHoldsThePort() async {
+        // Guards against PID reuse: if the process exited between the scan and
+        // the click, the PID may now belong to something unrelated.
+        let target = makeProcess(pid: 4512, port: 8080)
+        let scanner = FakePortScanner(portsToReturn: [target])
+        let terminator = FakeProcessTerminator()
+        let viewModel = PortListViewModel(scanner: scanner, terminator: terminator)
+        await viewModel.refresh()
+
+        scanner.portsToReturn = []
+        await viewModel.kill(target)
+
+        XCTAssertTrue(terminator.forceTerminatedPIDs.isEmpty)
+        XCTAssertTrue(terminator.terminatedPIDs.isEmpty)
+        XCTAssertNotNil(viewModel.errorMessage)
     }
 
     func test_confirmKill_setsErrorMessageWhenProcessSurvives() async {
@@ -160,7 +181,7 @@ final class PortListViewModelTests: XCTestCase {
         let viewModel = PortListViewModel(scanner: scanner, terminator: terminator)
 
         viewModel.requestKill(target)
-        scanner.portsToReturn = []
+        terminator.onSignal = { scanner.portsToReturn = [] }
         await viewModel.confirmKill(force: false)
 
         XCTAssertEqual(terminator.terminatedPIDs, [7])

@@ -117,6 +117,15 @@ final class PortListViewModel: ObservableObject {
     func kill(_ target: PortProcessInfo, force: Bool = true) async {
         pendingKillTarget = nil
 
+        // The scan is a snapshot: the process may have exited since, and the OS
+        // may have recycled its PID onto something unrelated. Re-scan and only
+        // proceed if the same PID still holds the same port.
+        await refresh()
+        guard ports.contains(target) else {
+            errorMessage = "Port \(target.port) is no longer held by PID \(target.pid). Nothing to terminate."
+            return
+        }
+
         do {
             if force {
                 try terminator.forceTerminate(pid: target.pid)

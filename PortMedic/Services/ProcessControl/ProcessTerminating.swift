@@ -20,6 +20,7 @@ enum ProcessTerminationError: LocalizedError {
     case signalFailed(pid: pid_t, errno: Int32)
     case permissionDenied(pid: pid_t)
     case noSuchProcess(pid: pid_t)
+    case unsafeTarget(pid: pid_t)
 
     var errorDescription: String? {
         switch self {
@@ -29,6 +30,8 @@ enum ProcessTerminationError: LocalizedError {
             return "Permission denied terminating process \(pid). Try running PortMedic with elevated privileges."
         case .noSuchProcess(let pid):
             return "Process \(pid) no longer exists."
+        case .unsafeTarget(let pid):
+            return "Refusing to terminate process \(pid): it is not a valid, safe target."
         }
     }
 }
