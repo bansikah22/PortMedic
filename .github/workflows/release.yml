@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to build (for example v1.0.0)
+        required: true
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  PROJECT: PortMedic.xcodeproj
+  SCHEME: PortMedic
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Select Xcode
+        run: |
+          XCODE_PATH="/Applications/Xcode_16.4.app"
+          if [ ! -d "$XCODE_PATH" ]; then
+            echo "Error: Xcode 16.4 not found at $XCODE_PATH"
+            ls /Applications | grep "Xcode" || true
+            exit 1
+          fi
+          sudo xcode-select --switch "$XCODE_PATH"
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            VERSION="${{ github.event.inputs.tag }}"
+          else
+            VERSION="${GITHUB_REF_NAME}"
+          fi
+          echo "value=${VERSION#v}" >> "$GITHUB_OUTPUT"
+
+      # Unsigned build: distributing a signed and notarised app requires a
+      # Developer ID certificate, which must be supplied as repository secrets.
+      # See docs/RELEASING.md for enabling signing.
+      - name: Build Release
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Package app
+        run: |
+          APP_PATH="build/Build/Products/Release/PortMedic.app"
+          test -d "$APP_PATH" || { echo "App not found at $APP_PATH"; exit 1; }
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$APP_PATH" "PortMedic-${{ steps.version.outputs.value }}.zip"
+
+      - name: Generate checksum
+        run: |
+          shasum -a 256 "PortMedic-${{ steps.version.outputs.value }}.zip" \
+            > "PortMedic-${{ steps.version.outputs.value }}.zip.sha256"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PortMedic-${{ steps.version.outputs.value }}
+          path: |
+            PortMedic-*.zip
+            PortMedic-*.zip.sha256
+          retention-days: 30
+
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            PortMedic-*.zip
+            PortMedic-*.zip.sha256

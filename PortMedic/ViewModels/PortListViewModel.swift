@@ -5,6 +5,7 @@
 //  Created by bansikah on 24/08/2026.
 //
 
+import AppKit
 import Foundation
 
 /// Drives the port list screen: owns state, talks to the scanning/termination
@@ -13,16 +14,30 @@ import Foundation
 final class PortListViewModel: ObservableObject {
     @Published private(set) var ports: [PortProcessInfo] = []
     @Published private(set) var isLoading = false
-    @Published var searchText = ""
     @Published var errorMessage: String?
     @Published var pendingKillTarget: PortProcessInfo?
     @Published var selectedProcess: PortProcessInfo?
     @Published private(set) var lastRefreshedAt: Date?
 
+    /// Search results, recomputed only when the query or the scan changes.
+    /// A computed property would re-filter on every SwiftUI body evaluation.
+    @Published private(set) var filteredPorts: [PortProcessInfo] = []
+
+    @Published var searchText = "" {
+        didSet {
+            guard searchText != oldValue else { return }
+            updateFilteredPorts()
+        }
+    }
+
     @Published var isAutoRefreshEnabled = true {
         didSet {
             guard isAutoRefreshEnabled != oldValue else { return }
-            isAutoRefreshEnabled ? startAutoRefresh() : stopAutoRefresh()
+            if isAutoRefreshEnabled {
+                startAutoRefresh()
+            } else {
+                stopAutoRefresh()
+            }
         }
     }
 
@@ -33,22 +48,16 @@ final class PortListViewModel: ObservableObject {
         }
     }
 
-    var filteredPorts: [PortProcessInfo] {
-        guard !searchText.isEmpty else { return ports }
-        let query = searchText.lowercased()
-        return ports.filter { process in
-            // Also match the detected framework label (e.g. "postgres" should find a
-            // container process named "docker"/"com.docker.backend" running Postgres).
-            if process.searchableText.contains(query) { return true }
-            return frameworkBadge(for: process)?.label.lowercased().contains(query) ?? false
-        }
-    }
-
     private let scanner: PortScanning
     private let terminator: ProcessTerminating
     private let frameworkDetector: FrameworkDetecting
     private let detailsFetcher: ProcessDetailsFetching
     private var autoRefreshTask: Task<Void, Never>?
+    private var activationObservers: [NSObjectProtocol] = []
+
+    /// Framework detection is deterministic per process name and port, so it is
+    /// resolved once per scan instead of on every row render.
+    private var badgeCache: [String: FrameworkBadge?] = [:]
 
     init(
         scanner: PortScanning = LsofPortScanner(),
@@ -65,7 +74,11 @@ final class PortListViewModel: ObservableObject {
     }
 
     func frameworkBadge(for process: PortProcessInfo) -> FrameworkBadge? {
-        frameworkDetector.badge(for: process)
+        let key = "\(process.processName)|\(process.port)"
+        if let cached = badgeCache[key] { return cached }
+        let badge = frameworkDetector.badge(for: process)
+        badgeCache[key] = badge
+        return badge
     }
 
     func processDetails(for process: PortProcessInfo) async -> ProcessDetails {
@@ -74,10 +87,39 @@ final class PortListViewModel: ObservableObject {
 
     deinit {
         autoRefreshTask?.cancel()
+        activationObservers.forEach(NotificationCenter.default.removeObserver)
     }
 
     func onAppear() {
+        observeAppActivation()
         startAutoRefresh()
+    }
+
+    /// Polling only earns its keep while the user is looking at the app, so it
+    /// is suspended whenever PortMedic is not the active application.
+    private func observeAppActivation() {
+        guard activationObservers.isEmpty else { return }
+
+        let center = NotificationCenter.default
+        activationObservers = [
+            center.addObserver(
+                forName: NSApplication.didResignActiveNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated { self?.stopAutoRefresh() }
+            },
+            center.addObserver(
+                forName: NSApplication.didBecomeActiveNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self, self.isAutoRefreshEnabled else { return }
+                    self.startAutoRefresh()
+                }
+            }
+        ]
     }
 
     func refresh() async {
@@ -85,8 +127,13 @@ final class PortListViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            ports = try await scanner.scan()
-                .sorted { $0.port < $1.port }
+            let scanned = try await scanner.scan().sorted { $0.port < $1.port }
+            // Skip republishing identical results so SwiftUI does not re-render
+            // the whole table every poll when nothing has changed.
+            if scanned != ports {
+                ports = scanned
+                updateFilteredPorts()
+            }
             errorMessage = nil
             lastRefreshedAt = Date()
             // The selected process may have exited or released its port; drop a stale selection.
@@ -95,6 +142,21 @@ final class PortListViewModel: ObservableObject {
             }
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    private func updateFilteredPorts() {
+        guard !searchText.isEmpty else {
+            filteredPorts = ports
+            return
+        }
+
+        let query = searchText.lowercased()
+        filteredPorts = ports.filter { process in
+            // Also match the detected framework label (e.g. "postgres" should find a
+            // container process named "docker"/"com.docker.backend" running Postgres).
+            if process.searchableText.contains(query) { return true }
+            return frameworkBadge(for: process)?.label.lowercased().contains(query) ?? false
         }
     }
 
@@ -116,6 +178,15 @@ final class PortListViewModel: ObservableObject {
     /// it here would always find nil.
     func kill(_ target: PortProcessInfo, force: Bool = true) async {
         pendingKillTarget = nil
+
+        // The scan is a snapshot: the process may have exited since, and the OS
+        // may have recycled its PID onto something unrelated. Re-scan and only
+        // proceed if the same PID still holds the same port.
+        await refresh()
+        guard ports.contains(target) else {
+            errorMessage = "Port \(target.port) is no longer held by PID \(target.pid). Nothing to terminate."
+            return
+        }
 
         do {
             if force {

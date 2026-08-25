@@ -66,4 +66,26 @@ final class LsofOutputParserTests: XCTestCase {
     func test_extractPort_returnsNilForMissingPort() {
         XCTAssertNil(LsofOutputParser.extractPort(from: "no-colon-here"))
     }
+
+    func test_parse_rejectsNonPositivePIDs() {
+        // kill(2) treats 0 as "this process group" and -1 as "every process the
+        // user can signal", so such rows must never become killable targets.
+        let output = """
+        COMMAND   PID   USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+        evil         0 joetec   23u  IPv4 0x1234      0t0  TCP *:8080 (LISTEN)
+        evil        -1 joetec   23u  IPv4 0x1234      0t0  TCP *:8081 (LISTEN)
+        """
+
+        XCTAssertTrue(LsofOutputParser.parse(output).isEmpty)
+    }
+
+    func test_parse_rejectsOutOfRangePorts() {
+        let output = """
+        COMMAND   PID   USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+        weird     4512 joetec   23u  IPv4 0x1234      0t0  TCP *:0 (LISTEN)
+        weird     4513 joetec   23u  IPv4 0x1234      0t0  TCP *:99999 (LISTEN)
+        """
+
+        XCTAssertTrue(LsofOutputParser.parse(output).isEmpty)
+    }
 }

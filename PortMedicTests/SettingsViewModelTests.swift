@@ -32,7 +32,9 @@ private struct TestError: LocalizedError {
 final class SettingsViewModelTests: XCTestCase {
     private func makeDefaults() -> UserDefaults {
         let suiteName = "SettingsViewModelTests-\(UUID().uuidString)"
-        let defaults = UserDefaults(suiteName: suiteName)!
+        guard let defaults = UserDefaults(suiteName: suiteName) else {
+            fatalError("Could not create UserDefaults suite \(suiteName)")
+        }
         defaults.removePersistentDomain(forName: suiteName)
         return defaults
     }

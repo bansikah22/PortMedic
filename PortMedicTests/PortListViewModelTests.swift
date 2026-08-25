@@ -23,19 +23,32 @@ private final class FakePortScanner: PortScanning, @unchecked Sendable {
     }
 }
 
+private final class CountingFrameworkDetector: FrameworkDetecting, @unchecked Sendable {
+    private(set) var callCount = 0
+
+    func badge(for process: PortProcessInfo) -> FrameworkBadge? {
+        callCount += 1
+        return FrameworkBadge(label: "Detected", tint: .blue)
+    }
+}
+
 private final class FakeProcessTerminator: ProcessTerminating, @unchecked Sendable {
     private(set) var terminatedPIDs: [pid_t] = []
     private(set) var forceTerminatedPIDs: [pid_t] = []
     var errorToThrow: Error?
+    /// Lets a test model the port actually being released by the signal.
+    var onSignal: (() -> Void)?
 
     func terminate(pid: pid_t) throws {
         if let errorToThrow { throw errorToThrow }
         terminatedPIDs.append(pid)
+        onSignal?()
     }
 
     func forceTerminate(pid: pid_t) throws {
         if let errorToThrow { throw errorToThrow }
         forceTerminatedPIDs.append(pid)
+        onSignal?()
     }
 }
 
@@ -48,7 +61,7 @@ final class PortListViewModelTests: XCTestCase {
     func test_refresh_populatesPortsSortedByPort() async {
         let scanner = FakePortScanner(portsToReturn: [
             makeProcess(pid: 1, port: 8080),
-            makeProcess(pid: 2, port: 3000),
+            makeProcess(pid: 2, port: 3000)
         ])
         let viewModel = PortListViewModel(scanner: scanner, terminator: FakeProcessTerminator())
 
@@ -68,10 +81,26 @@ final class PortListViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.ports.isEmpty)
     }
 
+    func test_frameworkBadge_isCachedPerProcessAndPort() async {
+        let detector = CountingFrameworkDetector()
+        let process = makeProcess(pid: 1, port: 8080, name: "java")
+        let viewModel = PortListViewModel(
+            scanner: FakePortScanner(),
+            terminator: FakeProcessTerminator(),
+            frameworkDetector: detector
+        )
+
+        for _ in 0..<10 {
+            _ = viewModel.frameworkBadge(for: process)
+        }
+
+        XCTAssertEqual(detector.callCount, 1)
+    }
+
     func test_filteredPorts_matchesSearchTextAcrossFields() async {
         let scanner = FakePortScanner(portsToReturn: [
             makeProcess(pid: 42, port: 5432, name: "postgres"),
-            makeProcess(pid: 99, port: 3000, name: "node"),
+            makeProcess(pid: 99, port: 3000, name: "node")
         ])
         let viewModel = PortListViewModel(scanner: scanner, terminator: FakeProcessTerminator())
         await viewModel.refresh()
@@ -91,7 +120,7 @@ final class PortListViewModelTests: XCTestCase {
         // search should still find it via the detected framework badge.
         let scanner = FakePortScanner(portsToReturn: [
             makeProcess(pid: 7, port: 5432, name: "docker"),
-            makeProcess(pid: 8, port: 3000, name: "node"),
+            makeProcess(pid: 8, port: 3000, name: "node")
         ])
         let viewModel = PortListViewModel(scanner: scanner, terminator: FakeProcessTerminator())
         await viewModel.refresh()
@@ -111,7 +140,7 @@ final class PortListViewModelTests: XCTestCase {
         viewModel.requestKill(target)
         XCTAssertEqual(viewModel.pendingKillTarget, target)
 
-        scanner.portsToReturn = []
+        terminator.onSignal = { scanner.portsToReturn = [] }
         await viewModel.confirmKill()
 
         // The default kill action sends SIGKILL directly, since supervised
@@ -132,11 +161,28 @@ final class PortListViewModelTests: XCTestCase {
 
         viewModel.requestKill(target)
         viewModel.cancelPendingKill()
-        scanner.portsToReturn = []
+        terminator.onSignal = { scanner.portsToReturn = [] }
         await viewModel.kill(target)
 
         XCTAssertEqual(terminator.forceTerminatedPIDs, [32018])
         XCTAssertNil(viewModel.errorMessage)
+    }
+
+    func test_kill_doesNotSignalWhenTargetNoLongerHoldsThePort() async {
+        // Guards against PID reuse: if the process exited between the scan and
+        // the click, the PID may now belong to something unrelated.
+        let target = makeProcess(pid: 4512, port: 8080)
+        let scanner = FakePortScanner(portsToReturn: [target])
+        let terminator = FakeProcessTerminator()
+        let viewModel = PortListViewModel(scanner: scanner, terminator: terminator)
+        await viewModel.refresh()
+
+        scanner.portsToReturn = []
+        await viewModel.kill(target)
+
+        XCTAssertTrue(terminator.forceTerminatedPIDs.isEmpty)
+        XCTAssertTrue(terminator.terminatedPIDs.isEmpty)
+        XCTAssertNotNil(viewModel.errorMessage)
     }
 
     func test_confirmKill_setsErrorMessageWhenProcessSurvives() async {
@@ -160,7 +206,7 @@ final class PortListViewModelTests: XCTestCase {
         let viewModel = PortListViewModel(scanner: scanner, terminator: terminator)
 
         viewModel.requestKill(target)
-        scanner.portsToReturn = []
+        terminator.onSignal = { scanner.portsToReturn = [] }
         await viewModel.confirmKill(force: false)
 
         XCTAssertEqual(terminator.terminatedPIDs, [7])

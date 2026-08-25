@@ -22,7 +22,7 @@ struct PortRowView: View {
                     .fill(Theme.statusGreen)
                     .frame(width: 6, height: 6)
                 Text("\(process.port)")
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Theme.portText)
             }
             .font(.system(.body, design: .monospaced))
             .frame(width: 90, alignment: .leading)
@@ -61,7 +61,7 @@ struct PortRowView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(isSelected ? Color.white.opacity(0.06) : Color.clear)
+        .background(isSelected ? Theme.rowSelectedBackground : Color.clear)
         .contentShape(Rectangle())
     }
 
@@ -79,15 +79,22 @@ struct PortRowView: View {
 }
 
 #Preview {
-    VStack(spacing: 0) {
+    let java = PortProcessInfo(
+        pid: 4512, port: 8080, transportProtocol: .tcp, processName: "java", user: "joetec"
+    )
+    let node = PortProcessInfo(
+        pid: 1104, port: 3000, transportProtocol: .tcp, processName: "node", user: "joetec"
+    )
+
+    return VStack(spacing: 0) {
         PortRowView(
-            process: PortProcessInfo(pid: 4512, port: 8080, transportProtocol: .tcp, processName: "java", user: "joetec"),
+            process: java,
             badge: FrameworkBadge(label: "Spring Boot", tint: .blue),
             isSelected: false,
             onKillTapped: {}
         )
         PortRowView(
-            process: PortProcessInfo(pid: 1104, port: 3000, transportProtocol: .tcp, processName: "node", user: "joetec"),
+            process: node,
             badge: FrameworkBadge(label: "Next.js", tint: .orange),
             isSelected: true,
             onKillTapped: {}

@@ -93,7 +93,7 @@ struct DashboardView: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .frame(width: 220)
-            .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 6))
+            .background(Theme.searchFieldBackground, in: RoundedRectangle(cornerRadius: 6))
 
             Button {
                 Task { await viewModel.refresh() }

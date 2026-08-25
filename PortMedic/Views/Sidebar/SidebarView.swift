@@ -55,14 +55,11 @@ struct SidebarView: View {
 
     private var header: some View {
         HStack(spacing: 10) {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.accentColor)
+            Image(nsImage: Self.appIcon)
+                .resizable()
+                .interpolation(.high)
                 .frame(width: 36, height: 36)
-                .overlay(
-                    Text("P")
-                        .font(.headline.bold())
-                        .foregroundStyle(.white)
-                )
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 0) {
                 Text("PortMedic")
@@ -80,6 +77,10 @@ struct SidebarView: View {
         .padding(.vertical, 16)
     }
 
+    /// Reads the real app icon so the sidebar can never drift from the bundle icon.
+    private static let appIcon: NSImage =
+        NSImage(named: "AppIcon") ?? NSApplication.shared.applicationIconImage
+
     private var footer: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Help", systemImage: "questionmark.circle")
@@ -93,7 +94,7 @@ struct SidebarView: View {
 
 private extension Bundle {
     var appVersion: String {
-        infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     }
 }
 
