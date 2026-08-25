@@ -25,10 +25,10 @@ enum LsofOutputParser {
             guard let pid = pid_t(columns[1]), pid > 0 else { continue }
             let user = String(columns[2])
             let fileDescriptor = String(columns[3])
-            let node = columns[7]
+            let node = columns[7].uppercased()
             let name = columns[8...].joined(separator: " ")
 
-            guard let transportProtocol = PortProcessInfo.TransportProtocol(rawValue: node.uppercased()) else { continue }
+            guard let transportProtocol = PortProcessInfo.TransportProtocol(rawValue: node) else { continue }
             guard let port = extractPort(from: name), (1...65535).contains(port) else { continue }
 
             results.append(

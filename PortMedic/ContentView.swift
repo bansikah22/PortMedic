@@ -46,4 +46,3 @@ struct ContentView: View {
         .environmentObject(PortListViewModel())
         .environmentObject(SettingsViewModel())
 }
-

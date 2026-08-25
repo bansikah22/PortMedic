@@ -23,6 +23,15 @@ private final class FakePortScanner: PortScanning, @unchecked Sendable {
     }
 }
 
+private final class CountingFrameworkDetector: FrameworkDetecting, @unchecked Sendable {
+    private(set) var callCount = 0
+
+    func badge(for process: PortProcessInfo) -> FrameworkBadge? {
+        callCount += 1
+        return FrameworkBadge(label: "Detected", tint: .blue)
+    }
+}
+
 private final class FakeProcessTerminator: ProcessTerminating, @unchecked Sendable {
     private(set) var terminatedPIDs: [pid_t] = []
     private(set) var forceTerminatedPIDs: [pid_t] = []
@@ -52,7 +61,7 @@ final class PortListViewModelTests: XCTestCase {
     func test_refresh_populatesPortsSortedByPort() async {
         let scanner = FakePortScanner(portsToReturn: [
             makeProcess(pid: 1, port: 8080),
-            makeProcess(pid: 2, port: 3000),
+            makeProcess(pid: 2, port: 3000)
         ])
         let viewModel = PortListViewModel(scanner: scanner, terminator: FakeProcessTerminator())
 
@@ -72,10 +81,26 @@ final class PortListViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.ports.isEmpty)
     }
 
+    func test_frameworkBadge_isCachedPerProcessAndPort() async {
+        let detector = CountingFrameworkDetector()
+        let process = makeProcess(pid: 1, port: 8080, name: "java")
+        let viewModel = PortListViewModel(
+            scanner: FakePortScanner(),
+            terminator: FakeProcessTerminator(),
+            frameworkDetector: detector
+        )
+
+        for _ in 0..<10 {
+            _ = viewModel.frameworkBadge(for: process)
+        }
+
+        XCTAssertEqual(detector.callCount, 1)
+    }
+
     func test_filteredPorts_matchesSearchTextAcrossFields() async {
         let scanner = FakePortScanner(portsToReturn: [
             makeProcess(pid: 42, port: 5432, name: "postgres"),
-            makeProcess(pid: 99, port: 3000, name: "node"),
+            makeProcess(pid: 99, port: 3000, name: "node")
         ])
         let viewModel = PortListViewModel(scanner: scanner, terminator: FakeProcessTerminator())
         await viewModel.refresh()
@@ -95,7 +120,7 @@ final class PortListViewModelTests: XCTestCase {
         // search should still find it via the detected framework badge.
         let scanner = FakePortScanner(portsToReturn: [
             makeProcess(pid: 7, port: 5432, name: "docker"),
-            makeProcess(pid: 8, port: 3000, name: "node"),
+            makeProcess(pid: 8, port: 3000, name: "node")
         ])
         let viewModel = PortListViewModel(scanner: scanner, terminator: FakeProcessTerminator())
         await viewModel.refresh()

@@ -45,7 +45,7 @@ struct ProcessDetailPanel: View {
     private var header: some View {
         HStack(spacing: 10) {
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color.white.opacity(0.08))
+                .fill(Theme.searchFieldBackground)
                 .frame(width: 36, height: 36)
                 .overlay(Image(systemName: "curlybraces").foregroundStyle(Theme.primaryText))
 
@@ -78,7 +78,7 @@ struct ProcessDetailPanel: View {
                 Text(process.transportProtocol.rawValue)
             }
             statusItem(title: "PORT") {
-                Text("\(process.port)").foregroundStyle(.blue)
+                Text("\(process.port)").foregroundStyle(Theme.portText)
             }
             statusItem(title: "USER") {
                 Text(process.user)
@@ -109,7 +109,7 @@ struct ProcessDetailPanel: View {
                 .truncationMode(.middle)
                 .padding(8)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 6))
+                .background(Theme.searchFieldBackground, in: RoundedRectangle(cornerRadius: 6))
         }
     }
 }

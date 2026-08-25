@@ -62,8 +62,8 @@ enum CommandRunner {
 
                 continuation.resume(
                     returning: CommandResult(
-                        standardOutput: String(decoding: stdoutData, as: UTF8.self),
-                        standardError: String(decoding: stderrData, as: UTF8.self),
+                        standardOutput: String(bytes: stdoutData, encoding: .utf8) ?? "",
+                        standardError: String(bytes: stderrData, encoding: .utf8) ?? "",
                         exitCode: process.terminationStatus
                     )
                 )
