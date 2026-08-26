@@ -21,7 +21,7 @@ struct PortRowView: View {
                 Circle()
                     .fill(Theme.statusGreen)
                     .frame(width: 6, height: 6)
-                Text("\(process.port)")
+                Text(verbatim: String(process.port))
                     .foregroundStyle(Theme.portText)
             }
             .font(.system(.body, design: .monospaced))

@@ -78,7 +78,7 @@ struct ProcessDetailPanel: View {
                 Text(process.transportProtocol.rawValue)
             }
             statusItem(title: "PORT") {
-                Text("\(process.port)").foregroundStyle(Theme.portText)
+                Text(verbatim: String(process.port)).foregroundStyle(Theme.portText)
             }
             statusItem(title: "USER") {
                 Text(process.user)

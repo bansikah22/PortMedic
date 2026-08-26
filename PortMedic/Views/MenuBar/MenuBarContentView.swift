@@ -82,7 +82,7 @@ struct MenuBarContentView: View {
                 .fill(Theme.statusGreen)
                 .frame(width: 6, height: 6)
             VStack(alignment: .leading, spacing: 1) {
-                Text("\(process.port)")
+                Text(verbatim: String(process.port))
                     .font(.system(.body, design: .monospaced))
                 Text(viewModel.frameworkBadge(for: process)?.label ?? process.processName)
                     .font(.caption)
