@@ -11,7 +11,7 @@ listening on a network port and lets you terminate it with a single click.
 It replaces the repetitive `lsof -i :8080` / `kill -9 <PID>` terminal workflow
 that developers run countless times a week.
 
-![PortMedic dashboard](docs/images/version-1.0.png)
+![PortMedic dashboard](docs/images/version-1.0.0.png)
 
 ## Why
 
@@ -82,7 +82,24 @@ running all day.
 
 ## Installation
 
-Build from source:
+### Download a release
+
+Download `PortMedic-X.Y.Z.dmg` from the [Releases page](https://github.com/bansikah22/PortMedic/releases),
+open it, and drag `PortMedic.app` into `Applications`.
+
+Release builds are unsigned and not notarised, so on first launch macOS
+Gatekeeper will refuse to open it with an "Apple could not verify..." or
+"unidentified developer" message. This is expected for a free, open-source
+distribution without an Apple Developer Program membership. To open it
+anyway:
+
+- Right-click (or Control-click) `PortMedic.app` in `Applications` and choose
+  **Open**, then confirm in the dialog that appears — this only needs to be
+  done once, or
+- Run `xattr -cr /Applications/PortMedic.app` in Terminal to clear the
+  quarantine flag.
+
+### Build from source
 
 ```bash
 git clone https://github.com/bansikah22/PortMedic.git
@@ -162,7 +179,7 @@ builds the app, runs the test suite with code coverage, uploads the resulting
 strict mode.
 
 Tagging a commit as `vX.Y.Z` runs the `Release` workflow, which builds a
-Release configuration, packages `PortMedic.app` as a zip archive with a
+Release configuration, packages `PortMedic.app` as a `.dmg` disk image with a
 SHA-256 checksum, and opens a draft GitHub release. Release builds are
 currently unsigned; distributing a signed and notarised build requires a
 Developer ID certificate stored in repository secrets.
