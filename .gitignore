@@ -45,3 +45,6 @@ playground.xcworkspace
 fastlane/report.xml
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Internal-only docs: not meant to be published to GitHub
+docs/ARCHITECTURE.md
