@@ -87,17 +87,17 @@ running all day.
 Download `PortMedic-X.Y.Z.dmg` from the [Releases page](https://github.com/bansikah22/PortMedic/releases),
 open it, and drag `PortMedic.app` into `Applications`.
 
-Release builds are unsigned and not notarised, so on first launch macOS
-Gatekeeper will refuse to open it with an "Apple could not verify..." or
-"unidentified developer" message. This is expected for a free, open-source
-distribution without an Apple Developer Program membership. To open it
-anyway:
+Release builds are ad-hoc signed (not by an Apple Developer ID) and not
+notarised, since that requires a paid Apple Developer Program membership. On
+first launch macOS Gatekeeper may still refuse to open the app with an
+"Apple could not verify..." dialog that only offers **Done** or
+**Move to Trash**, with no "Open Anyway" button. To open it anyway:
 
-- Right-click (or Control-click) `PortMedic.app` in `Applications` and choose
-  **Open**, then confirm in the dialog that appears — this only needs to be
-  done once, or
+- Try double-clicking it once (it will be blocked), then go to
+  **System Settings > Privacy & Security**, scroll to the Security section,
+  and click **Open Anyway** next to the PortMedic message, or
 - Run `xattr -cr /Applications/PortMedic.app` in Terminal to clear the
-  quarantine flag.
+  quarantine flag, which lets it open normally without any prompt.
 
 ### Build from source
 

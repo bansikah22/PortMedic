@@ -71,6 +71,14 @@ jobs:
         run: |
           APP_PATH="build/Build/Products/Release/PortMedic.app"
           test -d "$APP_PATH" || { echo "App not found at $APP_PATH"; exit 1; }
+
+          # Ad-hoc signing (no Apple Developer account, free): a fully
+          # unsigned app downloaded from a browser is hard-blocked by
+          # Gatekeeper as "damaged" with no bypass. An ad-hoc signature
+          # downgrades that to the dismissible "unidentified developer"
+          # prompt (right-click > Open).
+          codesign --force --deep --sign - "$APP_PATH"
+
           STAGING_DIR="dmg-staging"
           rm -rf "$STAGING_DIR"
           mkdir -p "$STAGING_DIR"
