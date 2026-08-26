@@ -21,13 +21,13 @@ struct PortRowView: View {
                 Circle()
                     .fill(Theme.statusGreen)
                     .frame(width: 6, height: 6)
-                Text("\(process.port)")
+                Text(verbatim: String(process.port))
                     .foregroundStyle(Theme.portText)
             }
             .font(.system(.body, design: .monospaced))
             .frame(width: 90, alignment: .leading)
 
-            Text("\(process.pid)")
+            Text(verbatim: String(process.pid))
                 .font(.system(.body, design: .monospaced))
                 .foregroundStyle(Theme.secondaryText)
                 .frame(width: 70, alignment: .leading)

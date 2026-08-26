@@ -53,7 +53,7 @@ struct ProcessDetailPanel: View {
                 Text(process.processName)
                     .font(.headline)
                     .foregroundStyle(Theme.primaryText)
-                Text("PID: \(process.pid)")
+                Text(verbatim: "PID: \(process.pid)")
                     .font(.caption)
                     .foregroundStyle(Theme.secondaryText)
             }
@@ -78,7 +78,7 @@ struct ProcessDetailPanel: View {
                 Text(process.transportProtocol.rawValue)
             }
             statusItem(title: "PORT") {
-                Text("\(process.port)").foregroundStyle(Theme.portText)
+                Text(verbatim: String(process.port)).foregroundStyle(Theme.portText)
             }
             statusItem(title: "USER") {
                 Text(process.user)
