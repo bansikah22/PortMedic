@@ -27,7 +27,7 @@ struct PortRowView: View {
             .font(.system(.body, design: .monospaced))
             .frame(width: 90, alignment: .leading)
 
-            Text("\(process.pid)")
+            Text(verbatim: String(process.pid))
                 .font(.system(.body, design: .monospaced))
                 .foregroundStyle(Theme.secondaryText)
                 .frame(width: 70, alignment: .leading)

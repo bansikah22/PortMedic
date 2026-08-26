@@ -53,7 +53,7 @@ struct ProcessDetailPanel: View {
                 Text(process.processName)
                     .font(.headline)
                     .foregroundStyle(Theme.primaryText)
-                Text("PID: \(process.pid)")
+                Text(verbatim: "PID: \(process.pid)")
                     .font(.caption)
                     .foregroundStyle(Theme.secondaryText)
             }
