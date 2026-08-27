@@ -64,7 +64,7 @@ PortMedic is built to stay out of the way. Measured on a release build:
 
 | Metric                  | Value    |
 | ----------------------- | -------- |
-| Application bundle      | 4 MB     |
+| Application bundle      | 3.04 MB     |
 | Resident memory         | ~80 MB   |
 | CPU while idle          | 0.0%     |
 
