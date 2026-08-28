@@ -1,0 +1,549 @@
+# PortMedic – Future Feature Roadmap
+
+## Guiding Principle
+
+PortMedic must remain:
+
+- **Lightweight**
+- **Simple**
+- **Fast**
+- **Native to macOS**
+- **Functional**
+- **Focused on developer productivity**
+
+Before adding any new feature, we should ask:
+
+> **Does this feature help a developer solve a port or process problem faster?**
+
+If the answer is no, the feature should probably not be added.
+
+PortMedic should not become a full system monitor, Docker manager, Kubernetes dashboard, or network monitoring platform.
+
+Its purpose is simple:
+
+> **Help developers quickly understand and manage processes occupying development ports.**
+
+---
+
+# Future Features
+
+## 🥇 1. Graceful Termination + Force Kill
+
+### Problem
+
+The current approach to terminating a process may use an aggressive signal such as `SIGKILL`.
+
+While effective, `SIGKILL` immediately terminates a process and does not allow it to perform cleanup operations.
+
+For example, an application may need time to:
+
+- Close files
+- Close network connections
+- Save temporary state
+- Shut down gracefully
+
+---
+
+### Proposed Solution
+
+PortMedic should attempt a graceful termination first.
+
+Workflow:
+
+```text
+User clicks Terminate
+        ↓
+Send SIGTERM
+        ↓
+Wait briefly
+        ↓
+Did the process stop?
+       │
+   ┌───┴────┐
+   │        │
+  Yes       No
+   │        │
+Success   Offer Force Kill
+             │
+             ↓
+         Send SIGKILL
+             │
+             ↓
+          Verify Port
+```
+
+---
+
+### User Interface
+
+Instead of only:
+
+```text
+[ Kill ]
+```
+
+Use:
+
+```text
+[ Terminate ]
+```
+
+If the process does not stop:
+
+```text
+The process did not terminate gracefully.
+
+[ Cancel ] [ Force Kill ]
+```
+
+---
+
+### Benefits
+
+- Safer process termination
+- Better developer experience
+- Less aggressive by default
+- Force kill remains available when necessary
+
+---
+
+# 🥈 2. Favorites / Watched Ports
+
+### Problem
+
+Developers usually work with the same ports repeatedly.
+
+Examples:
+
+```text
+3000   Frontend
+5173   Vite
+8080   Spring Boot
+5432   PostgreSQL
+6379   Redis
+```
+
+Showing every active port is useful, but developers often care most about their own development ports.
+
+---
+
+### Proposed Solution
+
+Allow users to mark ports as:
+
+```text
+⭐ Favorite
+```
+
+or
+
+```text
+👁 Watched
+```
+
+---
+
+### Example
+
+```text
+Watched Ports
+
+8080    Spring Boot      Occupied
+
+3000    React            Available
+
+5432    PostgreSQL       Occupied
+```
+
+---
+
+### Possible Behaviour
+
+PortMedic could optionally show the status of watched ports:
+
+```text
+🟢 Available
+
+🟡 Occupied
+
+🔴 Problem detected
+```
+
+The menu bar could prioritize watched ports.
+
+---
+
+### Benefits
+
+- Faster access to frequently used ports
+- Less searching
+- More personalized workflow
+- Useful without adding significant complexity
+
+---
+
+# 🥉 3. HTTP Quick Actions
+
+### Problem
+
+Many occupied development ports belong to HTTP services.
+
+Examples:
+
+```text
+3000
+5173
+8080
+8081
+9090
+```
+
+Developers often want to quickly open these services in a browser.
+
+---
+
+### Proposed Solution
+
+For ports likely to expose HTTP services, provide quick actions.
+
+Example:
+
+```text
+8080
+
+Spring Boot
+
+PID: 4512
+
+[ Open in Browser ]
+
+[ Copy localhost URL ]
+
+[ Copy PID ]
+
+[ Terminate ]
+```
+
+---
+
+### Generated URL
+
+Example:
+
+```text
+http://localhost:8080
+```
+
+---
+
+### Quick Actions
+
+- Open in Default Browser
+- Copy `localhost:<port>`
+- Copy Full HTTP URL
+- Copy PID
+- Terminate Process
+
+---
+
+### Important Principle
+
+This feature should remain lightweight.
+
+PortMedic should not become a web browser or HTTP inspector.
+
+It should simply provide convenient shortcuts.
+
+---
+
+# 🏅 4. Global Keyboard Shortcut
+
+### Problem
+
+Developers should not need to manually locate the PortMedic window every time they encounter a port conflict.
+
+---
+
+### Proposed Solution
+
+Provide an optional global keyboard shortcut.
+
+Example:
+
+```text
+⌥ + ⌘ + P
+```
+
+When triggered:
+
+```text
+Global Shortcut
+        ↓
+Open PortMedic
+        ↓
+Focus Search
+        ↓
+User types port
+        ↓
+Select process
+        ↓
+Terminate
+```
+
+---
+
+### Example Workflow
+
+```text
+Application fails to start
+
+"Port 8080 already in use"
+
+        ↓
+
+⌥ + ⌘ + P
+
+        ↓
+
+Type: 8080
+
+        ↓
+
+Terminate
+
+        ↓
+
+Continue coding
+```
+
+---
+
+### Benefits
+
+- Faster workflow
+- Minimal context switching
+- Excellent developer productivity
+- Fits naturally into the macOS ecosystem
+
+---
+
+### Important Principle
+
+The keyboard shortcut should be:
+
+- Optional
+- Configurable
+- Easy to disable
+
+PortMedic should never interfere with other applications or existing shortcuts.
+
+---
+
+# 🏅 5. Improved Menu Bar Workflow
+
+## Why This Matters
+
+The menu bar is one of PortMedic's strongest features.
+
+PortMedic should be available without requiring developers to:
+
+- Open Terminal
+- Open VS Code
+- Open a large desktop application
+
+The menu bar should provide the fastest possible workflow.
+
+---
+
+## Proposed Menu
+
+```text
+🩺 PortMedic
+
+Active Development Ports
+
+8080   Spring Boot       [Terminate]
+
+5173   Vite              [Terminate]
+
+3000   Node              [Terminate]
+
+5432   PostgreSQL        [Terminate]
+
+────────────────────────────
+
+Refresh
+
+Open Dashboard
+
+Settings
+
+Quit
+```
+
+---
+
+## Watched Ports Priority
+
+When watched ports are configured:
+
+```text
+🩺 PortMedic
+
+⭐ Watched Ports
+
+8080   🟡 Occupied
+
+3000   🟢 Available
+
+5432   🟡 Occupied
+
+────────────────────────────
+
+Other Active Ports
+
+5173   Vite
+
+9090   Java
+```
+
+---
+
+## Menu Bar Actions
+
+The menu bar should allow:
+
+- Refresh ports
+- View watched ports
+- View active development ports
+- Terminate a process
+- Open the full dashboard
+- Access settings
+- Quit PortMedic
+
+---
+
+## Design Goal
+
+The menu bar experience should be:
+
+```text
+Click
+
+↓
+
+Identify
+
+↓
+
+Terminate
+
+↓
+
+Continue Coding
+```
+
+No unnecessary screens.
+
+No complicated navigation.
+
+---
+
+# Recommended Implementation Priority
+
+## Phase 1 — Safety
+
+### Graceful Termination + Force Kill
+
+This should be implemented first because it improves the safety and reliability of the application's primary feature.
+
+---
+
+## Phase 2 — Productivity
+
+### Favorites / Watched Ports
+
+This helps developers quickly focus on the ports they use most frequently.
+
+---
+
+## Phase 3 — Convenience
+
+### HTTP Quick Actions
+
+Useful for common development services while remaining simple and lightweight.
+
+---
+
+## Phase 4 — Speed
+
+### Global Keyboard Shortcut
+
+Provides fast access to PortMedic without requiring window switching.
+
+---
+
+## Phase 5 — Polish
+
+### Improved Menu Bar Workflow
+
+Make the menu bar the fastest and simplest way to manage common development ports.
+
+---
+
+# Features We Should Avoid for Now
+
+To preserve the lightweight nature of PortMedic, we should avoid adding:
+
+- Full Docker management
+- Kubernetes dashboards
+- Cloud infrastructure management
+- Remote server monitoring
+- Full network monitoring
+- Database management
+- Heavy CPU analytics
+- Memory monitoring dashboards
+- Complex process automation
+- User accounts
+- Cloud synchronization
+- Backend services
+
+These features would increase complexity and move PortMedic away from its core purpose.
+
+---
+
+# Final Product Philosophy
+
+PortMedic should remain focused.
+
+It is not intended to be:
+
+> A complete developer operations platform.
+
+It is intended to be:
+
+> **A fast, lightweight native macOS utility that helps developers quickly understand and manage occupied development ports.**
+
+Every future feature should strengthen one of these goals:
+
+1. **Make port management faster**
+2. **Make process management safer**
+3. **Reduce context switching**
+4. **Keep the application lightweight**
+5. **Keep the user experience simple**
+
+---
+
+# The PortMedic Principle
+
+> **Small enough to stay out of your way.**
+>
+> **Fast enough to solve the problem immediately.**
+>
+> **Useful enough to keep installed.**
+
+One click.
+
+One second.
+
+One free port.
