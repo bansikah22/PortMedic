@@ -11,6 +11,7 @@ struct ContentView: View {
     @State private var selectedSection: AppSection = .dashboard
     @EnvironmentObject private var portListViewModel: PortListViewModel
     @EnvironmentObject private var settingsViewModel: SettingsViewModel
+    @EnvironmentObject private var watchedPortsViewModel: WatchedPortsViewModel
 
     var body: some View {
         NavigationSplitView {
@@ -19,9 +20,18 @@ struct ContentView: View {
             switch selectedSection {
             case .dashboard:
                 DashboardView(viewModel: portListViewModel)
+            case .favorites:
+                WatchedPortsView(
+                    watchedPortsViewModel: watchedPortsViewModel,
+                    portListViewModel: portListViewModel
+                )
             case .settings:
-                SettingsView(settingsViewModel: settingsViewModel, portListViewModel: portListViewModel)
-            case .favorites, .history:
+                SettingsView(
+                    settingsViewModel: settingsViewModel,
+                    portListViewModel: portListViewModel,
+                    watchedPortsViewModel: watchedPortsViewModel
+                )
+            case .history:
                 comingSoon(for: selectedSection)
             }
         }
@@ -45,4 +55,5 @@ struct ContentView: View {
     ContentView()
         .environmentObject(PortListViewModel())
         .environmentObject(SettingsViewModel())
+        .environmentObject(WatchedPortsViewModel())
 }

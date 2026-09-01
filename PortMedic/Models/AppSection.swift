@@ -10,7 +10,7 @@ import Foundation
 /// Top-level sidebar destinations.
 enum AppSection: String, CaseIterable, Identifiable, Hashable {
     case dashboard = "Dashboard"
-    case favorites = "Favorites"
+    case favorites = "Watched Ports"
     case history = "History"
     case settings = "Settings"
 
@@ -19,7 +19,7 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
     var systemImage: String {
         switch self {
         case .dashboard: return "square.grid.2x2.fill"
-        case .favorites: return "star.fill"
+        case .favorites: return "eye.fill"
         case .history: return "clock.arrow.circlepath"
         case .settings: return "gearshape.fill"
         }
@@ -27,6 +27,6 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
 
     /// Sections with a working implementation in this release.
     var isAvailable: Bool {
-        self == .dashboard || self == .settings
+        self == .dashboard || self == .favorites || self == .settings
     }
 }

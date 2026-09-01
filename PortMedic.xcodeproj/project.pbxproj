@@ -13,6 +13,7 @@
 		C154B39342A6177822DFF902 /* LsofOutputParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 746D3D1A48A828A89BBBA66B /* LsofOutputParserTests.swift */; };
 		C893F5F439E35D0D56747D5D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CD267880531D295C78B1D37F /* Cocoa.framework */; };
 		D2492D3FA8B02DE307CAD592 /* PortListViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC1371290DC30961733CF933 /* PortListViewModelTests.swift */; };
+		E216B5D0A1114F3E8C620A27 /* WatchedPortsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E216B5D1A1114F3E8C620A27 /* WatchedPortsViewModelTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +35,7 @@
 		746D3D1A48A828A89BBBA66B /* LsofOutputParserTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LsofOutputParserTests.swift; sourceTree = "<group>"; };
 		CD267880531D295C78B1D37F /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		EC1371290DC30961733CF933 /* PortListViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PortListViewModelTests.swift; sourceTree = "<group>"; };
+		E216B5D1A1114F3E8C620A27 /* WatchedPortsViewModelTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchedPortsViewModelTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -71,6 +73,7 @@
 				304D1979E8CC92F65AF46E1C /* HeuristicFrameworkDetectorTests.swift */,
 				1DE879BE50CC1F982C24C5C1 /* SettingsViewModelTests.swift */,
 				6A14E0EDBADA4265000CC9AC /* SignalProcessTerminatorTests.swift */,
+				E216B5D1A1114F3E8C620A27 /* WatchedPortsViewModelTests.swift */,
 			);
 			path = PortMedicTests;
 			sourceTree = "<group>";
@@ -213,6 +216,7 @@
 				7891476900E261C3AE32ED63 /* HeuristicFrameworkDetectorTests.swift in Sources */,
 				B484A075DCE2220E853313B2 /* SettingsViewModelTests.swift in Sources */,
 				6F120580D501D13CA181346F /* SignalProcessTerminatorTests.swift in Sources */,
+				E216B5D0A1114F3E8C620A27 /* WatchedPortsViewModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
