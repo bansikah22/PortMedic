@@ -28,7 +28,7 @@ struct ProcessDetailPanel: View {
             Button {
                 viewModel.requestKill(process)
             } label: {
-                Text("Kill Process")
+                Text("Terminate Process")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)

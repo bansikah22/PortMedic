@@ -53,11 +53,11 @@ struct PortRowView: View {
             Spacer()
 
             Button(action: onKillTapped) {
-                Text("Kill")
+                Text("Terminate")
             }
             .buttonStyle(.bordered)
             .tint(Theme.killRed)
-            .frame(width: 70, alignment: .trailing)
+            .frame(width: 90, alignment: .trailing)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
