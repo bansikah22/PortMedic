@@ -53,24 +53,30 @@ final class PortListViewModel: ObservableObject {
     private let terminator: ProcessTerminating
     private let frameworkDetector: FrameworkDetecting
     private let detailsFetcher: ProcessDetailsFetching
+    private let quickActionService: ProcessQuickActionPerforming
     private var autoRefreshTask: Task<Void, Never>?
     private var activationObservers: [NSObjectProtocol] = []
 
     /// Framework detection is deterministic per process name and port, so it is
     /// resolved once per scan instead of on every row render.
     private var badgeCache: [String: FrameworkBadge?] = [:]
+    private static let webDevelopmentPorts: Set<Int> = [
+        3000, 4200, 5000, 5173, 8000, 8080, 8081, 8888, 9000, 9090
+    ]
 
     init(
         scanner: PortScanning = LsofPortScanner(),
         terminator: ProcessTerminating = SignalProcessTerminator(),
         frameworkDetector: FrameworkDetecting = HeuristicFrameworkDetector(),
         detailsFetcher: ProcessDetailsFetching = LsofProcessDetailsFetcher(),
+        quickActionService: ProcessQuickActionPerforming = AppKitProcessQuickActionService(),
         autoRefreshIntervalSeconds: Double = 5
     ) {
         self.scanner = scanner
         self.terminator = terminator
         self.frameworkDetector = frameworkDetector
         self.detailsFetcher = detailsFetcher
+        self.quickActionService = quickActionService
         self.autoRefreshIntervalSeconds = autoRefreshIntervalSeconds
     }
 
@@ -84,6 +90,29 @@ final class PortListViewModel: ObservableObject {
 
     func processDetails(for process: PortProcessInfo) async -> ProcessDetails {
         (try? await detailsFetcher.fetch(for: process.pid)) ?? ProcessDetails()
+    }
+
+    func copyPID(for process: PortProcessInfo) {
+        quickActionService.copyToClipboard(String(process.pid))
+    }
+
+    func copyLocalhostURL(for process: PortProcessInfo) {
+        quickActionService.copyToClipboard(localhostURLString(for: process))
+    }
+
+    func openLocalhostURL(for process: PortProcessInfo) {
+        guard let url = URL(string: localhostURLString(for: process)), quickActionService.openInBrowser(url) else {
+            errorMessage = "Unable to open the localhost URL in your default browser."
+            return
+        }
+    }
+
+    func isLikelyHTTPService(_ process: PortProcessInfo) -> Bool {
+        Self.webDevelopmentPorts.contains(process.port)
+    }
+
+    private func localhostURLString(for process: PortProcessInfo) -> String {
+        "http://localhost:\(process.port)"
     }
 
     deinit {

@@ -52,6 +52,21 @@ private final class FakeProcessTerminator: ProcessTerminating, @unchecked Sendab
     }
 }
 
+private final class FakeQuickActionService: ProcessQuickActionPerforming {
+    private(set) var copiedValues: [String] = []
+    private(set) var openedURLs: [URL] = []
+    var canOpenURL = true
+
+    func copyToClipboard(_ value: String) {
+        copiedValues.append(value)
+    }
+
+    func openInBrowser(_ url: URL) -> Bool {
+        openedURLs.append(url)
+        return canOpenURL
+    }
+}
+
 @MainActor
 final class PortListViewModelTests: XCTestCase {
     private func makeProcess(pid: pid_t = 100, port: Int = 8080, name: String = "java") -> PortProcessInfo {
@@ -248,5 +263,56 @@ final class PortListViewModelTests: XCTestCase {
         await viewModel.refresh()
 
         XCTAssertNil(viewModel.selectedProcess)
+    }
+
+    func test_copyPID_delegatesUnformattedPIDToQuickActionService() {
+        let quickActions = FakeQuickActionService()
+        let process = makeProcess(pid: 12345)
+        let viewModel = PortListViewModel(
+            scanner: FakePortScanner(),
+            terminator: FakeProcessTerminator(),
+            quickActionService: quickActions
+        )
+
+        viewModel.copyPID(for: process)
+
+        XCTAssertEqual(quickActions.copiedValues, ["12345"])
+    }
+
+    func test_copyLocalhostURL_delegatesURLForProcessPort() {
+        let quickActions = FakeQuickActionService()
+        let process = makeProcess(port: 8080)
+        let viewModel = PortListViewModel(
+            scanner: FakePortScanner(),
+            terminator: FakeProcessTerminator(),
+            quickActionService: quickActions
+        )
+
+        viewModel.copyLocalhostURL(for: process)
+
+        XCTAssertEqual(quickActions.copiedValues, ["http://localhost:8080"])
+    }
+
+    func test_openLocalhostURL_setsErrorWhenBrowserCannotOpenURL() {
+        let quickActions = FakeQuickActionService()
+        quickActions.canOpenURL = false
+        let process = makeProcess(port: 5173)
+        let viewModel = PortListViewModel(
+            scanner: FakePortScanner(),
+            terminator: FakeProcessTerminator(),
+            quickActionService: quickActions
+        )
+
+        viewModel.openLocalhostURL(for: process)
+
+        XCTAssertEqual(quickActions.openedURLs, [URL(string: "http://localhost:5173")!])
+        XCTAssertNotNil(viewModel.errorMessage)
+    }
+
+    func test_isLikelyHTTPService_recognizesKnownDevelopmentPorts() {
+        let viewModel = PortListViewModel(scanner: FakePortScanner(), terminator: FakeProcessTerminator())
+
+        XCTAssertTrue(viewModel.isLikelyHTTPService(makeProcess(port: 8080)))
+        XCTAssertFalse(viewModel.isLikelyHTTPService(makeProcess(port: 5432)))
     }
 }
