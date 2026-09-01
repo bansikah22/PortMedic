@@ -11,12 +11,14 @@ import SwiftUI
 struct PortMedicApp: App {
     @StateObject private var portListViewModel = PortListViewModel()
     @StateObject private var settingsViewModel = SettingsViewModel()
+    @StateObject private var watchedPortsViewModel = WatchedPortsViewModel()
 
     var body: some Scene {
         WindowGroup(id: "main") {
             ContentView()
                 .environmentObject(portListViewModel)
                 .environmentObject(settingsViewModel)
+                .environmentObject(watchedPortsViewModel)
                 .preferredColorScheme(settingsViewModel.appearance.colorScheme)
         }
 

@@ -12,10 +12,11 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject var settingsViewModel: SettingsViewModel
     @ObservedObject var portListViewModel: PortListViewModel
+    @ObservedObject var watchedPortsViewModel: WatchedPortsViewModel
 
     private enum Tab: String, CaseIterable, Identifiable {
         case general = "General"
-        case favorites = "Favorites"
+        case favorites = "Watched Ports"
         case notifications = "Notifications"
 
         var id: String { rawValue }
@@ -23,7 +24,7 @@ struct SettingsView: View {
         var systemImage: String {
             switch self {
             case .general: return "gearshape"
-            case .favorites: return "star"
+            case .favorites: return "eye"
             case .notifications: return "bell"
             }
         }
@@ -48,12 +49,16 @@ struct SettingsView: View {
             Group {
                 switch selectedTab {
                 case .general: generalPreferences
-                case .favorites: placeholder("Favorites")
+                case .favorites:
+                    WatchedPortsView(
+                        watchedPortsViewModel: watchedPortsViewModel,
+                        portListViewModel: portListViewModel
+                    )
                 case .notifications: placeholder("Notifications")
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .padding(24)
+            .padding(selectedTab == .favorites ? 0 : 24)
             .background(Theme.contentBackground)
         }
         .alert(
@@ -151,6 +156,10 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView(settingsViewModel: SettingsViewModel(), portListViewModel: PortListViewModel())
+    SettingsView(
+        settingsViewModel: SettingsViewModel(),
+        portListViewModel: PortListViewModel(),
+        watchedPortsViewModel: WatchedPortsViewModel()
+    )
         .frame(width: 700, height: 450)
 }
