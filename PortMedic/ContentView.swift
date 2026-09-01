@@ -8,16 +8,16 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var selectedSection: AppSection = .dashboard
     @EnvironmentObject private var portListViewModel: PortListViewModel
     @EnvironmentObject private var settingsViewModel: SettingsViewModel
     @EnvironmentObject private var watchedPortsViewModel: WatchedPortsViewModel
+    @EnvironmentObject private var navigationViewModel: AppNavigationViewModel
 
     var body: some View {
         NavigationSplitView {
-            SidebarView(selection: $selectedSection)
+            SidebarView(selection: $navigationViewModel.selectedSection)
         } detail: {
-            switch selectedSection {
+            switch navigationViewModel.selectedSection {
             case .dashboard:
                 DashboardView(viewModel: portListViewModel)
             case .favorites:
@@ -32,7 +32,7 @@ struct ContentView: View {
                     watchedPortsViewModel: watchedPortsViewModel
                 )
             case .history:
-                comingSoon(for: selectedSection)
+                comingSoon(for: navigationViewModel.selectedSection)
             }
         }
         .navigationTitle("")
@@ -56,4 +56,5 @@ struct ContentView: View {
         .environmentObject(PortListViewModel())
         .environmentObject(SettingsViewModel())
         .environmentObject(WatchedPortsViewModel())
+        .environmentObject(AppNavigationViewModel())
 }

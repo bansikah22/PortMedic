@@ -109,6 +109,12 @@ struct SettingsView: View {
 
             Divider().overlay(Theme.rowBorder)
 
+            Toggle(isOn: $settingsViewModel.globalShortcutEnabled) {
+                labeled("Global Shortcut", "Option-Command-P opens PortMedic and focuses search.")
+            }
+
+            Divider().overlay(Theme.rowBorder)
+
             HStack {
                 Text("Refresh Interval")
                     .foregroundStyle(Theme.primaryText)

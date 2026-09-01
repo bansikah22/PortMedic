@@ -10,8 +10,23 @@ import SwiftUI
 @main
 struct PortMedicApp: App {
     @StateObject private var portListViewModel = PortListViewModel()
-    @StateObject private var settingsViewModel = SettingsViewModel()
+    @StateObject private var settingsViewModel: SettingsViewModel
     @StateObject private var watchedPortsViewModel = WatchedPortsViewModel()
+    @StateObject private var navigationViewModel: AppNavigationViewModel
+
+    init() {
+        let navigationViewModel = AppNavigationViewModel()
+        _navigationViewModel = StateObject(wrappedValue: navigationViewModel)
+        _settingsViewModel = StateObject(
+            wrappedValue: SettingsViewModel(
+                globalShortcutManager: CarbonGlobalShortcutManager {
+                    Task { @MainActor in
+                        navigationViewModel.openDashboardAndFocusSearch()
+                    }
+                }
+            )
+        )
+    }
 
     var body: some Scene {
         WindowGroup(id: "main") {
@@ -19,6 +34,7 @@ struct PortMedicApp: App {
                 .environmentObject(portListViewModel)
                 .environmentObject(settingsViewModel)
                 .environmentObject(watchedPortsViewModel)
+                .environmentObject(navigationViewModel)
                 .preferredColorScheme(settingsViewModel.appearance.colorScheme)
         }
 

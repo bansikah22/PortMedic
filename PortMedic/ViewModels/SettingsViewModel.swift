@@ -34,21 +34,58 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    @Published var globalShortcutEnabled: Bool {
+        didSet {
+            guard !isRevertingShortcutChange, globalShortcutEnabled != oldValue else { return }
+            do {
+                try globalShortcutManager.setEnabled(globalShortcutEnabled)
+                userDefaults.set(globalShortcutEnabled, forKey: Self.globalShortcutDefaultsKey)
+            } catch {
+                errorMessage = error.localizedDescription
+                isRevertingShortcutChange = true
+                globalShortcutEnabled = oldValue
+                isRevertingShortcutChange = false
+            }
+        }
+    }
+
     @Published var errorMessage: String?
 
     private let loginItemManager: LoginItemManaging
+    private let globalShortcutManager: GlobalShortcutManaging
     private let userDefaults: UserDefaults
     private var isRevertingLoginItemChange = false
+    private var isRevertingShortcutChange = false
     private static let appearanceDefaultsKey = "com.portmedic.appearancePreference"
+    private static let globalShortcutDefaultsKey = "com.portmedic.globalShortcutEnabled"
 
     init(
         loginItemManager: LoginItemManaging = SMAppServiceLoginItemManager(),
+        globalShortcutManager: GlobalShortcutManaging = NoopGlobalShortcutManager(),
         userDefaults: UserDefaults = .standard
     ) {
         self.loginItemManager = loginItemManager
+        self.globalShortcutManager = globalShortcutManager
         self.userDefaults = userDefaults
         self.launchAtLoginEnabled = loginItemManager.isEnabled
         let storedValue = userDefaults.string(forKey: Self.appearanceDefaultsKey)
         self.appearance = storedValue.flatMap(AppearancePreference.init(rawValue:)) ?? .system
+        self.globalShortcutEnabled = userDefaults.bool(forKey: Self.globalShortcutDefaultsKey)
+        if globalShortcutEnabled {
+            do {
+                try globalShortcutManager.setEnabled(true)
+            } catch {
+                self.globalShortcutEnabled = false
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+}
+
+private final class NoopGlobalShortcutManager: GlobalShortcutManaging {
+    var isEnabled = false
+
+    func setEnabled(_ enabled: Bool) throws {
+        isEnabled = enabled
     }
 }

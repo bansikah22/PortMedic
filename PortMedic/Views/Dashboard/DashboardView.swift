@@ -10,6 +10,8 @@ import SwiftUI
 /// The "Active Ports" screen: search bar + table of listening ports + status bar.
 struct DashboardView: View {
     @ObservedObject var viewModel: PortListViewModel
+    @EnvironmentObject private var navigationViewModel: AppNavigationViewModel
+    @FocusState private var isSearchFocused: Bool
 
     var body: some View {
         HStack(spacing: 0) {
@@ -51,6 +53,9 @@ struct DashboardView: View {
         }
         .background(Theme.contentBackground)
         .task { viewModel.onAppear() }
+        .onChange(of: navigationViewModel.searchFocusRequest) { _, _ in
+            isSearchFocused = true
+        }
         .alert(
             terminationAlertTitle,
             isPresented: Binding(
@@ -107,6 +112,7 @@ struct DashboardView: View {
                 TextField("Search ports, PID…", text: $viewModel.searchText)
                     .textFieldStyle(.plain)
                     .foregroundStyle(Theme.primaryText)
+                    .focused($isSearchFocused)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
