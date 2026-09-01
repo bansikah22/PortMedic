@@ -24,6 +24,7 @@ enum GlobalShortcutError: LocalizedError {
 
 final class CarbonGlobalShortcutManager: GlobalShortcutManaging {
     private let handler: () -> Void
+    private var eventHandlerReference: EventHandlerRef?
     private var hotKeyReference: EventHotKeyRef?
 
     var isEnabled: Bool { hotKeyReference != nil }
@@ -37,12 +38,15 @@ final class CarbonGlobalShortcutManager: GlobalShortcutManaging {
             1,
             &eventType,
             Unmanaged.passUnretained(self).toOpaque(),
-            nil
+            &eventHandlerReference
         )
     }
 
     deinit {
         unregister()
+        if let eventHandlerReference {
+            RemoveEventHandler(eventHandlerReference)
+        }
     }
 
     func setEnabled(_ enabled: Bool) throws {
