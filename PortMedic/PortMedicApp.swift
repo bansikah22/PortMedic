@@ -23,7 +23,10 @@ struct PortMedicApp: App {
         }
 
         MenuBarExtra("PortMedic", systemImage: "bandage.fill") {
-            MenuBarContentView(viewModel: portListViewModel)
+            MenuBarContentView(
+                viewModel: portListViewModel,
+                watchedPortsViewModel: watchedPortsViewModel
+            )
         }
         .menuBarExtraStyle(.window)
     }
