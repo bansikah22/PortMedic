@@ -24,6 +24,18 @@ private final class FakeLoginItemManager: LoginItemManaging, @unchecked Sendable
     }
 }
 
+private final class FakeGlobalShortcutManager: GlobalShortcutManaging {
+    var isEnabled = false
+    var errorToThrow: Error?
+    private(set) var setEnabledCalls: [Bool] = []
+
+    func setEnabled(_ enabled: Bool) throws {
+        setEnabledCalls.append(enabled)
+        if let errorToThrow { throw errorToThrow }
+        isEnabled = enabled
+    }
+}
+
 private struct TestError: LocalizedError {
     var errorDescription: String? { "boom" }
 }
@@ -78,5 +90,35 @@ final class SettingsViewModelTests: XCTestCase {
         viewModel.appearance = .dark
 
         XCTAssertEqual(defaults.string(forKey: "com.portmedic.appearancePreference"), "dark")
+    }
+
+    func test_globalShortcut_persistsAndRegisters() {
+        let defaults = makeDefaults()
+        let manager = FakeGlobalShortcutManager()
+        let viewModel = SettingsViewModel(
+            loginItemManager: FakeLoginItemManager(),
+            globalShortcutManager: manager,
+            userDefaults: defaults
+        )
+
+        viewModel.globalShortcutEnabled = true
+
+        XCTAssertEqual(manager.setEnabledCalls, [true])
+        XCTAssertTrue(defaults.bool(forKey: "com.portmedic.globalShortcutEnabled"))
+    }
+
+    func test_globalShortcut_revertsWhenRegistrationFails() {
+        let manager = FakeGlobalShortcutManager()
+        manager.errorToThrow = TestError()
+        let viewModel = SettingsViewModel(
+            loginItemManager: FakeLoginItemManager(),
+            globalShortcutManager: manager,
+            userDefaults: makeDefaults()
+        )
+
+        viewModel.globalShortcutEnabled = true
+
+        XCTAssertFalse(viewModel.globalShortcutEnabled)
+        XCTAssertNotNil(viewModel.errorMessage)
     }
 }
