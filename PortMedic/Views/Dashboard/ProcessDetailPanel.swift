@@ -22,6 +22,7 @@ struct ProcessDetailPanel: View {
             statusGrid
             infoBox(title: "EXECUTABLE PATH", value: details?.executablePath)
             infoBox(title: "WORKING DIRECTORY", value: details?.workingDirectory)
+            quickActions
 
             Spacer()
 
@@ -95,6 +96,37 @@ struct ProcessDetailPanel: View {
                 .font(.system(.body, design: .monospaced))
                 .foregroundStyle(Theme.primaryText)
         }
+    }
+
+    @ViewBuilder
+    private var quickActions: some View {
+        HStack(spacing: 8) {
+            actionButton("Copy PID", systemImage: "doc.on.doc") {
+                viewModel.copyPID(for: process)
+            }
+
+            if viewModel.isLikelyHTTPService(process) {
+                actionButton("Copy localhost URL", systemImage: "link") {
+                    viewModel.copyLocalhostURL(for: process)
+                }
+                actionButton("Open in Browser", systemImage: "safari") {
+                    viewModel.openLocalhostURL(for: process)
+                }
+            }
+        }
+    }
+
+    private func actionButton(
+        _ title: String,
+        systemImage: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+        }
+        .buttonStyle(.bordered)
+        .help(title)
+        .accessibilityLabel(title)
     }
 
     private func infoBox(title: String, value: String?) -> some View {
