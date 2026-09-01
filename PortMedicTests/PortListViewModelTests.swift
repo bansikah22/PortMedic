@@ -130,7 +130,7 @@ final class PortListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.filteredPorts.map(\.pid), [7])
     }
 
-    func test_confirmKill_terminatesPendingTargetAndRefreshes() async {
+    func test_confirmKill_terminatesPendingTargetGracefullyAndRefreshes() async {
         let target = makeProcess(pid: 4512, port: 8080)
         let scanner = FakePortScanner(portsToReturn: [target])
         let terminator = FakeProcessTerminator()
@@ -143,9 +143,8 @@ final class PortListViewModelTests: XCTestCase {
         terminator.onSignal = { scanner.portsToReturn = [] }
         await viewModel.confirmKill()
 
-        // The default kill action sends SIGKILL directly, since supervised
-        // daemons (e.g. Docker) often ignore SIGTERM.
-        XCTAssertEqual(terminator.forceTerminatedPIDs, [4512])
+        XCTAssertEqual(terminator.terminatedPIDs, [4512])
+        XCTAssertTrue(terminator.forceTerminatedPIDs.isEmpty)
         XCTAssertNil(viewModel.pendingKillTarget)
     }
 
@@ -162,9 +161,9 @@ final class PortListViewModelTests: XCTestCase {
         viewModel.requestKill(target)
         viewModel.cancelPendingKill()
         terminator.onSignal = { scanner.portsToReturn = [] }
-        await viewModel.kill(target)
+        await viewModel.kill(target, force: false)
 
-        XCTAssertEqual(terminator.forceTerminatedPIDs, [32018])
+        XCTAssertEqual(terminator.terminatedPIDs, [32018])
         XCTAssertNil(viewModel.errorMessage)
     }
 
@@ -178,14 +177,14 @@ final class PortListViewModelTests: XCTestCase {
         await viewModel.refresh()
 
         scanner.portsToReturn = []
-        await viewModel.kill(target)
+        await viewModel.kill(target, force: false)
 
         XCTAssertTrue(terminator.forceTerminatedPIDs.isEmpty)
         XCTAssertTrue(terminator.terminatedPIDs.isEmpty)
         XCTAssertNotNil(viewModel.errorMessage)
     }
 
-    func test_confirmKill_setsErrorMessageWhenProcessSurvives() async {
+    func test_confirmKill_offersForceKillWhenProcessSurvives() async {
         // Some processes (e.g. supervised system services) get respawned or
         // ignore the kill signal; the port stays occupied after a refresh.
         let target = makeProcess(pid: 4512, port: 8080)
@@ -196,21 +195,22 @@ final class PortListViewModelTests: XCTestCase {
         viewModel.requestKill(target)
         await viewModel.confirmKill()
 
-        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertEqual(viewModel.forceKillTarget, target)
+        XCTAssertNil(viewModel.errorMessage)
     }
 
-    func test_confirmKill_withGracefulTerminate_sendsTerminate() async {
+    func test_confirmForceKill_sendsSIGKILL() async {
         let target = makeProcess(pid: 7, port: 9090)
         let scanner = FakePortScanner(portsToReturn: [target])
         let terminator = FakeProcessTerminator()
         let viewModel = PortListViewModel(scanner: scanner, terminator: terminator)
 
-        viewModel.requestKill(target)
+        viewModel.forceKillTarget = target
         terminator.onSignal = { scanner.portsToReturn = [] }
-        await viewModel.confirmKill(force: false)
+        await viewModel.confirmForceKill()
 
-        XCTAssertEqual(terminator.terminatedPIDs, [7])
-        XCTAssertTrue(terminator.forceTerminatedPIDs.isEmpty)
+        XCTAssertTrue(terminator.terminatedPIDs.isEmpty)
+        XCTAssertEqual(terminator.forceTerminatedPIDs, [7])
     }
 
     func test_cancelPendingKill_clearsTargetWithoutTerminating() async {

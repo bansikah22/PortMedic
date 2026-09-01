@@ -52,7 +52,7 @@ struct DashboardView: View {
         .background(Theme.contentBackground)
         .task { viewModel.onAppear() }
         .alert(
-            "Kill \(viewModel.pendingKillTarget?.processName ?? "") (PID \(viewModel.pendingKillTarget?.pid ?? 0))?",
+            terminationAlertTitle,
             isPresented: Binding(
                 get: { viewModel.pendingKillTarget != nil },
                 set: { isPresented in if !isPresented { viewModel.cancelPendingKill() } }
@@ -60,7 +60,25 @@ struct DashboardView: View {
             presenting: viewModel.pendingKillTarget
         ) { target in
             Button("Cancel", role: .cancel) { viewModel.cancelPendingKill() }
-            Button("Kill", role: .destructive) { Task { await viewModel.kill(target) } }
+            Button("Terminate", role: .destructive) { Task { await viewModel.kill(target, force: false) } }
+        } message: { _ in
+            Text("PortMedic will ask before using Force Kill if the process does not stop gracefully.")
+        }
+        .alert(
+            "Process Did Not Terminate",
+            isPresented: Binding(
+                get: { viewModel.forceKillTarget != nil },
+                set: { isPresented in if !isPresented { viewModel.cancelForceKill() } }
+            ),
+            presenting: viewModel.forceKillTarget
+        ) { target in
+            Button("Cancel", role: .cancel) { viewModel.cancelForceKill() }
+            Button("Force Kill", role: .destructive) { Task { await viewModel.kill(target, force: true) } }
+        } message: { target in
+            Text(
+                "\(target.processName) is still using port \(String(target.port)). "
+                    + "Force Kill ends it immediately without allowing cleanup."
+            )
         }
         .alert(
             "Error",
@@ -105,6 +123,11 @@ struct DashboardView: View {
             .disabled(viewModel.isLoading)
         }
         .padding(16)
+    }
+
+    private var terminationAlertTitle: String {
+        guard let target = viewModel.pendingKillTarget else { return "Terminate Process" }
+        return "Terminate \(target.processName) (PID \(String(target.pid)))?"
     }
 
     private var emptyState: some View {

@@ -16,6 +16,7 @@ final class PortListViewModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
     @Published var pendingKillTarget: PortProcessInfo?
+    @Published var forceKillTarget: PortProcessInfo?
     @Published var selectedProcess: PortProcessInfo?
     @Published private(set) var lastRefreshedAt: Date?
 
@@ -168,16 +169,26 @@ final class PortListViewModel: ObservableObject {
         pendingKillTarget = nil
     }
 
-    func confirmKill(force: Bool = true) async {
+    func cancelForceKill() {
+        forceKillTarget = nil
+    }
+
+    func confirmKill() async {
         guard let target = pendingKillTarget else { return }
-        await kill(target, force: force)
+        await kill(target, force: false)
+    }
+
+    func confirmForceKill() async {
+        guard let target = forceKillTarget else { return }
+        await kill(target, force: true)
     }
 
     /// Takes the target explicitly: SwiftUI clears `pendingKillTarget` via the
     /// alert's `isPresented` binding *before* the button action runs, so reading
     /// it here would always find nil.
-    func kill(_ target: PortProcessInfo, force: Bool = true) async {
+    func kill(_ target: PortProcessInfo, force: Bool) async {
         pendingKillTarget = nil
+        forceKillTarget = nil
 
         // The scan is a snapshot: the process may have exited since, and the OS
         // may have recycled its PID onto something unrelated. Re-scan and only
@@ -199,11 +210,15 @@ final class PortListViewModel: ObservableObject {
             await refresh()
 
             if ports.contains(target) {
-                errorMessage = """
-                Port \(target.port) is still in use by PID \(target.pid). \
-                It may be a supervised service (e.g. Docker Desktop) that restarts \
-                automatically, or require administrator privileges to stop.
-                """
+                if force {
+                    errorMessage = """
+                    Port \(target.port) is still in use by PID \(target.pid). \
+                    It may be a supervised service (e.g. Docker Desktop) that restarts \
+                    automatically, or require administrator privileges to stop.
+                    """
+                } else {
+                    forceKillTarget = target
+                }
             }
         } catch {
             errorMessage = error.localizedDescription
