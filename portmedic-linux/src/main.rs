@@ -4,6 +4,9 @@
 //! termination, and iced UI wiring are implemented in a follow-up change
 //! once this scaffold is validated on Linux CI.
 
+// Scaffold stage: modules aren't wired together yet, so unused items are expected; remove once real usage lands.
+#![allow(dead_code)]
+
 mod model;
 mod proc_scanner;
 mod process_control;
