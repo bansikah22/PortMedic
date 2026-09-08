@@ -42,7 +42,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             portmedic-linux/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('portmedic-linux/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('portmedic-linux/Cargo.lock', 'portmedic-linux/Cargo.toml') }}
           restore-keys: |
             ${{ runner.os }}-cargo-
 

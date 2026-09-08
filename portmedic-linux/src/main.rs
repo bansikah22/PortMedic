@@ -9,8 +9,7 @@ mod proc_scanner;
 mod process_control;
 
 fn main() -> iced::Result {
-    iced::application("PortMedic", PortMedic::update, PortMedic::view)
-        .run_with(PortMedic::new)
+    iced::application("PortMedic", PortMedic::update, PortMedic::view).run_with(PortMedic::new)
 }
 
 #[derive(Default)]

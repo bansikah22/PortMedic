@@ -30,6 +30,9 @@ fn send(pid: i32, sig: Signal) -> Result<(), ProcessTerminationError> {
     if !is_safe_target(pid) {
         return Err(ProcessTerminationError::UnsafeTarget(pid));
     }
+    // Success here only means the signal was delivered, not that the process
+    // has exited; callers must re-scan the port afterward to confirm release,
+    // same as PortListViewModel.kill() does on macOS.
     signal::kill(Pid::from_raw(pid), sig).map_err(|e| ProcessTerminationError::SignalFailed(pid, e))
 }
 
