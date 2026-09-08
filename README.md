@@ -80,6 +80,12 @@ running all day.
 - macOS 15.5 or later
 - Xcode 16.4 or later (to build from source)
 
+## Linux (experimental)
+
+An early-stage Rust port lives in [`portmedic-linux/`](portmedic-linux/). It
+is a scaffold today, not yet feature-complete; see that folder's README for
+status and design decisions.
+
 ## Installation
 
 ### Download a release

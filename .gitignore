@@ -48,3 +48,9 @@ fastlane/test_output
 
 # Internal-only docs: not meant to be published to GitHub
 docs/ARCHITECTURE.md
+
+# Rust (portmedic-linux)
+# Cargo.lock is intentionally committed (this is a binary, not a library),
+# for reproducible builds.
+portmedic-linux/target/
+
