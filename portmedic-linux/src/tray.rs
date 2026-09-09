@@ -2,6 +2,8 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
+use global_hotkey::hotkey::{Code, HotKey, Modifiers};
+use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager, HotKeyState};
 use tray_icon::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem, Submenu};
 use tray_icon::{Icon, TrayIconBuilder};
 
@@ -80,6 +82,15 @@ fn run(sender: Sender<TrayCommand>, update_receiver: Receiver<TrayUpdate>) {
         .with_title("PortMedic")
         .build();
 
+    // Ctrl+Shift+P shows the dashboard, mirroring the Carbon hotkey on macOS.
+    // Kept alive for the loop's lifetime; dropping it would unregister the shortcut.
+    let show_shortcut = HotKey::new(Some(Modifiers::CONTROL | Modifiers::SHIFT), Code::KeyP);
+    let _hotkey_manager = GlobalHotKeyManager::new()
+        .inspect(|manager| {
+            let _ = manager.register(show_shortcut);
+        })
+        .ok();
+
     let ids = [
         (show.id(), TrayCommand::ShowDashboard),
         (refresh.id(), TrayCommand::Refresh),
@@ -102,6 +113,11 @@ fn run(sender: Sender<TrayCommand>, update_receiver: Receiver<TrayUpdate>) {
                     force_kill_items[index].set_text("No active port");
                     force_kill_items[index].set_enabled(false);
                 }
+            }
+        }
+        while let Ok(event) = GlobalHotKeyEvent::receiver().try_recv() {
+            if event.id == show_shortcut.id() && event.state == HotKeyState::Pressed {
+                let _ = sender.send(TrayCommand::ShowDashboard);
             }
         }
         while let Ok(event) = MenuEvent::receiver().try_recv() {

@@ -1,15 +1,18 @@
 //! PortMedic for Linux — entry point.
 //!
 mod framework_detection;
+mod login_item;
 mod model;
 mod proc_scanner;
 mod process_control;
+mod quick_actions;
+mod settings;
 mod tray;
 mod watched_ports;
 
 fn main() -> iced::Result {
     iced::application("PortMedic", PortMedic::update, PortMedic::view)
-        .theme(|_| iced::Theme::Dark)
+        .theme(PortMedic::theme)
         .run_with(PortMedic::new)
 }
 
@@ -26,6 +29,7 @@ struct PortMedic {
     show_settings: bool,
     auto_refresh: bool,
     launch_at_login: bool,
+    appearance: settings::AppearancePreference,
     tray_receiver: std::sync::Arc<std::sync::Mutex<std::sync::mpsc::Receiver<tray::TrayCommand>>>,
     tray_updates: std::sync::mpsc::Sender<tray::TrayUpdate>,
 }
@@ -46,6 +50,7 @@ impl Default for PortMedic {
             show_settings: false,
             auto_refresh: false,
             launch_at_login: false,
+            appearance: settings::AppearancePreference::default(),
             tray_receiver: tray.commands,
             tray_updates: tray.updates,
         }
@@ -64,6 +69,9 @@ enum Message {
     ShowSettings,
     ToggleAutoRefresh(bool),
     ToggleLaunchAtLogin(bool),
+    SetAppearance(settings::AppearancePreference),
+    CopyToClipboard(String),
+    OpenInBrowser(String),
     ToggleWatched(u16),
     Terminate(i32),
     RequestForceKill(i32),
@@ -77,6 +85,8 @@ impl PortMedic {
     fn new() -> (Self, iced::Task<Message>) {
         let state = Self {
             watched_ports: watched_ports::load().unwrap_or_default(),
+            launch_at_login: login_item::is_enabled(),
+            appearance: settings::load().appearance,
             ..Self::default()
         };
         (
@@ -148,9 +158,30 @@ impl PortMedic {
                 iced::Task::none()
             }
             Message::ToggleLaunchAtLogin(enabled) => {
-                self.launch_at_login = enabled;
+                match login_item::set_enabled(enabled) {
+                    Ok(()) => self.launch_at_login = enabled,
+                    Err(error) => self.status = format!("Could not update autostart: {error}"),
+                }
                 iced::Task::none()
             }
+            Message::SetAppearance(preference) => {
+                self.appearance = preference;
+                let _ = settings::save(&settings::Settings {
+                    appearance: preference,
+                });
+                iced::Task::none()
+            }
+            Message::CopyToClipboard(value) => iced::clipboard::write(value),
+            Message::OpenInBrowser(url) => iced::Task::perform(
+                async move { quick_actions::open_in_browser(&url) },
+                |opened| {
+                    Message::ActionCompleted(if opened {
+                        "Opened in browser".to_owned()
+                    } else {
+                        "Could not find a browser (xdg-open missing)".to_owned()
+                    })
+                },
+            ),
             Message::ToggleWatched(port) => {
                 if let Some(index) = self
                     .watched_ports
@@ -217,6 +248,10 @@ impl PortMedic {
                 iced::Task::batch([iced::Task::done(next), Self::poll_tray()])
             }
         }
+    }
+
+    fn theme(&self) -> iced::Theme {
+        self.appearance.theme()
     }
 
     fn view(&self) -> iced::Element<'_, Message> {
@@ -323,22 +358,43 @@ impl PortMedic {
 
         let detail = self.selected_pid.and_then(|pid| {
             self.ports.iter().find(|port| port.pid == pid).map(|port| {
-                container(
-                    column![
-                        text("PROCESS DETAILS").size(11),
-                        text(&port.process_name).size(22),
-                        text(format!("PID {}", port.pid)).size(14),
-                        text(format!("Port {}  ·  {:?}", port.port, port.protocol)).size(14),
-                        text(format!("User ID {}", port.user)).size(14),
-                        button("Stop process")
-                            .on_press(Message::Terminate(port.pid))
-                            .style(iced::widget::button::secondary)
+                let mut details = column![
+                    text("PROCESS DETAILS").size(11),
+                    text(&port.process_name).size(22),
+                    text(format!("PID {}", port.pid)).size(14),
+                    text(format!("Port {}  ·  {:?}", port.port, port.protocol)).size(14),
+                    text(format!("User ID {}", port.user)).size(14),
+                ]
+                .spacing(10);
+                if let Some(exe_path) = &port.exe_path {
+                    details = details.push(text(format!("Executable: {exe_path}")).size(12));
+                }
+                if let Some(working_dir) = &port.working_dir {
+                    details = details.push(text(format!("Working dir: {working_dir}")).size(12));
+                }
+                details = details.push(
+                    row![
+                        button("Copy PID")
+                            .on_press(Message::CopyToClipboard(port.pid.to_string()))
+                            .style(iced::widget::button::text)
+                            .padding([7, 12]),
+                        button("Open in browser")
+                            .on_press(Message::OpenInBrowser(format!(
+                                "http://localhost:{}",
+                                port.port
+                            )))
+                            .style(iced::widget::button::text)
                             .padding([7, 12])
                     ]
-                    .spacing(10),
-                )
-                .padding(18)
-                .width(Length::Fixed(230.0))
+                    .spacing(6),
+                );
+                details = details.push(
+                    button("Stop process")
+                        .on_press(Message::Terminate(port.pid))
+                        .style(iced::widget::button::secondary)
+                        .padding([7, 12]),
+                );
+                container(details).padding(18).width(Length::Fixed(230.0))
             })
         });
 
@@ -470,7 +526,26 @@ impl PortMedic {
                         .size(13),
                     iced::widget::checkbox("Launch at login", self.launch_at_login)
                         .on_toggle(Message::ToggleLaunchAtLogin),
-                    text("Linux desktop autostart integration will be added next.").size(13)
+                    text("Adds or removes an XDG autostart entry for your desktop session.")
+                        .size(13)
+                ]
+                .spacing(10),
+            )
+            .padding(18)
+            .width(Length::Fill),
+            container(
+                column![
+                    text("Appearance").size(18),
+                    row(settings::AppearancePreference::ALL.iter().map(|preference| {
+                        iced::widget::radio(
+                            preference.label(),
+                            *preference,
+                            Some(self.appearance),
+                            Message::SetAppearance,
+                        )
+                        .into()
+                    }))
+                    .spacing(16)
                 ]
                 .spacing(10),
             )
@@ -479,7 +554,7 @@ impl PortMedic {
             container(
                 column![
                     text("Desktop integration").size(18),
-                    text("System tray and global shortcut support are planned for the next Linux integration slice.")
+                    text("System tray is active. Press Ctrl+Shift+P from anywhere to jump to the dashboard.")
                         .size(13)
                 ]
                 .spacing(8),

@@ -41,6 +41,8 @@ pub fn scan() -> std::io::Result<Vec<PortProcessInfo>> {
                 protocol: socket.protocol,
                 process_name: process_name(*pid),
                 user: process_user(*pid),
+                exe_path: process_exe(*pid),
+                working_dir: process_cwd(*pid),
             });
         }
     }
@@ -127,6 +129,20 @@ fn process_user(pid: i32) -> String {
     fs::metadata(format!("/proc/{pid}"))
         .map(|metadata| metadata.uid().to_string())
         .unwrap_or_else(|_| "unknown".to_owned())
+}
+
+// Mirrors LsofProcessDetailsFetcher: resolve the executable and working directory
+// via symlinks instead of shelling out.
+fn process_exe(pid: i32) -> Option<String> {
+    fs::read_link(format!("/proc/{pid}/exe"))
+        .ok()
+        .map(|path| path.to_string_lossy().into_owned())
+}
+
+fn process_cwd(pid: i32) -> Option<String> {
+    fs::read_link(format!("/proc/{pid}/cwd"))
+        .ok()
+        .map(|path| path.to_string_lossy().into_owned())
 }
 
 #[cfg(test)]

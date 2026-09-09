@@ -44,6 +44,8 @@ mod tests {
             protocol: TransportProtocol::Tcp,
             process_name: process_name.to_owned(),
             user: "1000".to_owned(),
+            exe_path: None,
+            working_dir: None,
         }
     }
 

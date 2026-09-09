@@ -8,6 +8,8 @@ pub struct PortProcessInfo {
     pub protocol: TransportProtocol,
     pub process_name: String,
     pub user: String,
+    pub exe_path: Option<String>,
+    pub working_dir: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
