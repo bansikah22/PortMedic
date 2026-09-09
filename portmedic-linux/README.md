@@ -48,7 +48,8 @@ cannot be built or run from the same machine used for the Swift app.
    ```bash
    sudo apt update
    sudo apt install -y build-essential pkg-config libssl-dev \
-     libgtk-3-dev libxkbcommon-dev libx11-dev libxcb1-dev libwayland-dev
+       libgtk-3-dev libglib2.0-dev libxdo-dev libappindicator3-dev \
+       libxkbcommon-dev libx11-dev libxcb1-dev libwayland-dev
    ```
 
 2. Install Rust if you haven't already:
