@@ -23,7 +23,8 @@ does not. This is a parallel implementation, not a port of the Swift source.
 portmedic-linux/
   Cargo.toml
   src/
-    main.rs             iced Application: State, Message, update, view
+    main.rs             iced Application: State, Message, update, view, window identity
+    branding.rs         Embedded PortMedic PNG decoded for window and tray icons
     model.rs             PortProcessInfo, TransportProtocol (mirrors PortProcessInfo.swift)
     proc_scanner.rs       /proc scanning -> Vec<PortProcessInfo>
     process_control.rs    PID-safety checks + SIGTERM/SIGKILL (mirrors SignalProcessTerminator.swift)
@@ -34,6 +35,8 @@ Planned additions as implementation proceeds:
 - `watched_ports.rs` — persisted watchlist (JSON file under `~/.config/portmedic/`).
 - `tray.rs` — system tray icon + popup, mirrors `MenuBarContentView.swift`.
 - `quick_actions.rs` — copy PID/localhost URL, `xdg-open` for "open in browser".
+- `assets/portmedic.png` — Linux desktop and application icon asset.
+- `com.portmedic.PortMedic.desktop` — desktop launcher metadata.
 
 ## Data flow
 
@@ -91,6 +94,20 @@ force-kill.
   "native-on-GNOME-only" GTK4-rs experience.
 - Tray icon via the `tray-icon` crate, mirroring `MenuBarExtra`.
 
+## Desktop integration
+
+The application uses `com.portmedic.PortMedic` as its Linux application ID so
+the window manager can associate the running window with the desktop entry.
+The window and tray both consume the embedded `assets/portmedic.png` asset.
+Selecting **Show PortMedic** from the tray clears the dashboard sub-view,
+unminimizes the existing window, and requests focus; it never opens a second
+window.
+
+For a source checkout, run `./scripts/install-desktop.sh` to install the
+desktop entry and icon under the user's XDG data directory. A future package
+format should install the same desktop entry and icon into system or package
+XDG paths.
+
 ## Testing strategy
 
 Pure-logic modules are unit tested without any Linux-specific I/O:
@@ -105,5 +122,6 @@ Pure-logic modules are unit tested without any Linux-specific I/O:
 
 ## Status
 
-Scaffold stage: project builds a placeholder window; `process_control` has
-real logic + tests; `proc_scanner` is a stub returning an empty list.
+Experimental stage: the dashboard, `/proc` scanning, process controls, tray,
+desktop icon, and tray-to-window focus flow are implemented. Packaging and
+broader runtime coverage across Linux desktop environments remain future work.

@@ -82,9 +82,12 @@ running all day.
 
 ## Linux (experimental)
 
-An early-stage Rust port lives in [`portmedic-linux/`](portmedic-linux/). It
-is a scaffold today, not yet feature-complete; see that folder's README for
-status and design decisions.
+An experimental Rust port lives in [`portmedic-linux/`](portmedic-linux/).
+It includes the dashboard, process controls, watched ports, quick actions,
+system tray integration, and Linux desktop branding. See its README for
+build, desktop registration, and packaging details.
+
+![PortMedic Linux dashboard](portmedic-linux/docs/images/image.png)
 
 ## Installation
 

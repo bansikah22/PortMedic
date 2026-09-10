@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=PortMedic
+Comment=Find and free local development ports
+Exec=portmedic-linux
+Icon=portmedic
+StartupWMClass=com.portmedic.PortMedic
+Terminal=false
+Categories=Development;

@@ -5,11 +5,10 @@ occupying a development port, without leaving your editor.
 
 ## Status
 
-**Scaffold only.** This crate currently builds a placeholder window; the
-`/proc` scanner and process termination modules contain stubs and unit tests
-for the logic that is safe to write without a Linux machine to validate
-against (PID-safety rules). Real `/proc/net/tcp` parsing, PID resolution,
-and the full iced UI are implemented in follow-up changes.
+**Experimental.** This crate provides the Linux dashboard, process scanning,
+process controls, watched ports, quick actions, settings, global shortcut,
+and system tray integration. Packaging is still source-oriented and should
+be treated as experimental until a distributable Linux package is provided.
 
 ## Why a Rust rewrite instead of reusing the Swift code
 
@@ -84,6 +83,18 @@ cannot be built or run from the same machine used for the Swift app.
    ```bash
    cargo run
    ```
+
+6. Register the desktop launcher and application icon for the current user:
+
+   ```bash
+   ./scripts/install-desktop.sh
+   ```
+
+The installer registers `com.portmedic.PortMedic.desktop`, installs the
+PortMedic PNG in the user's hicolor icon theme, and points the launcher at
+the debug binary. Re-run it after rebuilding if the executable path changes.
+The tray's **Show PortMedic** action restores and focuses the existing window;
+it does not start a second instance.
 
 Pushing to `feature/linux-port` also triggers `.github/workflows/ci-linux.yml`
 on GitHub's `ubuntu-latest` runner, so CI validates every change even

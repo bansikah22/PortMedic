@@ -1,5 +1,6 @@
 //! PortMedic for Linux — entry point.
 //!
+mod branding;
 mod framework_detection;
 mod login_item;
 mod model;
@@ -11,7 +12,18 @@ mod tray;
 mod watched_ports;
 
 fn main() -> iced::Result {
+    let window_icon = branding::rgba()
+        .and_then(|(rgba, width, height)| iced::window::icon::from_rgba(rgba, width, height).ok());
+
     iced::application("PortMedic", PortMedic::update, PortMedic::view)
+        .window(iced::window::Settings {
+            icon: window_icon,
+            platform_specific: iced::window::settings::PlatformSpecific {
+                application_id: "com.portmedic.PortMedic".to_owned(),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
         .theme(PortMedic::theme)
         .run_with(PortMedic::new)
 }
@@ -102,6 +114,16 @@ impl PortMedic {
         )
     }
 
+    fn focus_window() -> iced::Task<Message> {
+        iced::window::get_oldest().then(|window_id| match window_id {
+            Some(window_id) => iced::Task::batch([
+                iced::window::minimize(window_id, false),
+                iced::window::gain_focus(window_id),
+            ]),
+            None => iced::Task::none(),
+        })
+    }
+
     fn update(&mut self, message: Message) -> iced::Task<Message> {
         match message {
             Message::Refresh => iced::Task::perform(
@@ -133,7 +155,7 @@ impl PortMedic {
                 self.show_log = false;
                 self.show_watched = false;
                 self.show_settings = false;
-                iced::Task::none()
+                Self::focus_window()
             }
             Message::ShowLog => {
                 self.show_log = true;

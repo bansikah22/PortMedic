@@ -2,6 +2,7 @@ use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
+use crate::branding;
 use global_hotkey::hotkey::{Code, HotKey, Modifiers};
 use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager, HotKeyState};
 use tray_icon::menu::{Menu, MenuEvent, MenuItem, PredefinedMenuItem, Submenu};
@@ -75,7 +76,8 @@ fn run(sender: Sender<TrayCommand>, update_receiver: Receiver<TrayUpdate>) {
         &quit,
     ]);
 
-    let icon = Icon::from_rgba(vec![64; 16 * 16 * 4], 16, 16).ok();
+    let icon = branding::rgba()
+        .and_then(|(rgba, width, height)| Icon::from_rgba(rgba, width, height).ok());
     let _tray = TrayIconBuilder::new()
         .with_menu(Box::new(menu))
         .with_icon(icon.unwrap_or_else(|| Icon::from_rgba(vec![0; 4], 1, 1).unwrap()))
