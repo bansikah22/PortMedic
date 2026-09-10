@@ -125,8 +125,8 @@ below includes the development packages needed to compile the application.
 
 Pushes and pull requests that change `portmedic-linux/` trigger
 `.github/workflows/ci-linux.yml` on GitHub's `ubuntu-latest` runner. Version
-tags also trigger the Linux release workflow, which publishes the archive and
-checksum to the GitHub release.
+`linux-vX.Y.Z` tags trigger the Linux release workflow, which publishes the
+archive and checksum to the GitHub release.
 
 ## Building from source
 

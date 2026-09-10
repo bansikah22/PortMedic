@@ -138,6 +138,9 @@ cd PortMedic-linux-X.Y.Z
 ./portmedic-linux
 ```
 
+Linux release tags use the `linux-vX.Y.Z` format so they remain separate from
+the macOS release tags.
+
 The archive includes the release binary, PortMedic icon, desktop entry, and
 installer. Linux desktop libraries such as GTK3 and X11/Wayland support must
 already be available on the system; see the Linux README for package names.

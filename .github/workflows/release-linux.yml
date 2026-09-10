@@ -2,7 +2,7 @@ name: Release (Linux)
 
 on:
   push:
-    tags: ["v*.*.*"]
+    tags: ["linux-v*.*.*"]
   workflow_dispatch:
     inputs:
       tag:
@@ -51,7 +51,7 @@ jobs:
           else
             VERSION="${GITHUB_REF_NAME}"
           fi
-          echo "value=${VERSION#v}" >> "$GITHUB_OUTPUT"
+          echo "value=${VERSION#linux-v}" >> "$GITHUB_OUTPUT"
 
       - name: Build release binary
         run: cargo build --release --locked --verbose
