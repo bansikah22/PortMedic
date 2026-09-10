@@ -82,12 +82,34 @@ jobs:
           retention-days: 30
 
       - name: Publish GitHub release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
-          draft: true
-          generate_release_notes: true
-          files: |
-            portmedic-linux/PortMedic-linux-*.tar.gz
-            portmedic-linux/PortMedic-linux-*.tar.gz.sha256
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          set -eu
+          PACKAGE="portmedic-linux/PortMedic-linux-${VERSION}"
+          ASSETS=("$PACKAGE.tar.gz" "$PACKAGE.tar.gz.sha256")
+
+          # The release may already exist when this job is rerun after a
+          # transient GitHub API timeout. Keep the operation idempotent.
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            if ! gh release create "$RELEASE_TAG" \
+              --draft \
+              --generate-notes \
+              --verify-tag \
+              --title "PortMedic Linux $VERSION"; then
+              gh release view "$RELEASE_TAG" >/dev/null
+            fi
+          fi
+
+          for attempt in 1 2 3 4 5; do
+            if gh release upload "$RELEASE_TAG" "${ASSETS[@]}" --clobber; then
+              exit 0
+            fi
+            echo "Release asset upload attempt $attempt failed; retrying..."
+            sleep $((attempt * 5))
+          done
+          echo "Failed to upload Linux release assets after 5 attempts" >&2
+          exit 1
