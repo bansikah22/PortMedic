@@ -134,7 +134,7 @@ build no additional Rust code, and register the application with:
 ```bash
 tar -xzf PortMedic-linux-X.Y.Z.tar.gz
 cd PortMedic-linux-X.Y.Z
-./scripts/install-desktop.sh ./portmedic-linux
+./install.sh
 ./portmedic-linux
 ```
 

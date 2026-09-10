@@ -100,18 +100,19 @@ it does not start a second instance.
 
 Download `PortMedic-linux-X.Y.Z.tar.gz` and its `.sha256` checksum from the
 [GitHub Releases page](https://github.com/bansikah22/PortMedic/releases). Verify
-and extract the archive:
+and extract the archive, then run the installer:
 
 ```bash
 sha256sum --check PortMedic-linux-X.Y.Z.tar.gz.sha256
 tar -xzf PortMedic-linux-X.Y.Z.tar.gz
 cd PortMedic-linux-X.Y.Z
-./scripts/install-desktop.sh ./portmedic-linux
+./install.sh
 ```
 
-The installer copies the release binary's desktop entry and icon into the
-current user's XDG data directories. It does not require `sudo`. Launch
-PortMedic from the applications menu or run `./portmedic-linux` directly.
+The installer validates the platform, bundled binary, and required shared
+libraries, then copies the desktop entry and icon into the current user's XDG
+data directories. It does not require `sudo`. Launch PortMedic from the
+applications menu or run `./portmedic-linux` directly.
 
 The release is built on Ubuntu and requires the system libraries used by the
 GTK/tray and iced window backends. On Debian or Ubuntu, install:
@@ -122,6 +123,10 @@ sudo apt install libgtk-3-0 libxkbcommon0 libx11-6 libxcb1 libwayland-client0 li
 
 Library package names vary by distribution. The source-build dependency list
 below includes the development packages needed to compile the application.
+
+For a source checkout, build first with `cargo build --release`, then run
+`./install.sh` from `portmedic-linux/`. The script automatically finds the
+release or debug binary.
 
 Pushes and pull requests that change `portmedic-linux/` trigger
 `.github/workflows/ci-linux.yml` on GitHub's `ubuntu-latest` runner. Version

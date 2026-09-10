@@ -68,7 +68,8 @@ jobs:
           cp assets/portmedic.png "$PACKAGE/assets/portmedic.png"
           cp com.portmedic.PortMedic.desktop "$PACKAGE/com.portmedic.PortMedic.desktop"
           cp scripts/install-desktop.sh "$PACKAGE/scripts/install-desktop.sh"
-          chmod +x "$PACKAGE/portmedic-linux" "$PACKAGE/scripts/install-desktop.sh"
+          cp install.sh "$PACKAGE/install.sh"
+          chmod +x "$PACKAGE/portmedic-linux" "$PACKAGE/install.sh" "$PACKAGE/scripts/install-desktop.sh"
           tar -czf "$PACKAGE.tar.gz" "$PACKAGE"
           sha256sum "$PACKAGE.tar.gz" > "$PACKAGE.tar.gz.sha256"
 
