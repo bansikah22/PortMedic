@@ -90,8 +90,15 @@ jobs:
           VERSION: ${{ steps.version.outputs.value }}
         run: |
           set -eu
-          PACKAGE="portmedic-linux/PortMedic-linux-${VERSION}"
+          PACKAGE="PortMedic-linux-${VERSION}"
           ASSETS=("$PACKAGE.tar.gz" "$PACKAGE.tar.gz.sha256")
+
+          for asset in "${ASSETS[@]}"; do
+            if [ ! -f "$asset" ]; then
+              echo "Expected release asset was not created: $asset" >&2
+              exit 1
+            fi
+          done
 
           # The release may already exist when this job is rerun after a
           # transient GitHub API timeout. Keep the operation idempotent.
