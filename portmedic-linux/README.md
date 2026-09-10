@@ -7,8 +7,8 @@ occupying a development port, without leaving your editor.
 
 **Experimental.** This crate provides the Linux dashboard, process scanning,
 process controls, watched ports, quick actions, settings, global shortcut,
-and system tray integration. Packaging is still source-oriented and should
-be treated as experimental until a distributable Linux package is provided.
+and system tray integration. Linux releases are distributed as portable
+`tar.gz` archives; distro-native packages are not provided yet.
 
 ## Why a Rust rewrite instead of reusing the Swift code
 
@@ -57,16 +57,16 @@ cannot be built or run from the same machine used for the Swift app.
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
    ```
 
-3. Clone the repo and check out this branch:
+3. Clone the repo and check out the desired branch or tag:
 
    ```bash
    git clone https://github.com/bansikah22/PortMedic.git
    cd PortMedic
-   git checkout feature/linux-port
+   git checkout main
    ```
 
-   If you already have the repo cloned elsewhere (e.g. from working on the
-   macOS side), just `git fetch origin` then `git checkout feature/linux-port`.
+   If you already have the repo cloned elsewhere, run `git fetch origin` and
+   check out the desired branch or release tag.
 
 4. Build, lint, and test from inside `portmedic-linux/`:
 
@@ -96,11 +96,39 @@ the debug binary. Re-run it after rebuilding if the executable path changes.
 The tray's **Show PortMedic** action restores and focuses the existing window;
 it does not start a second instance.
 
-Pushing to `feature/linux-port` also triggers `.github/workflows/ci-linux.yml`
-on GitHub's `ubuntu-latest` runner, so CI validates every change even
-between local test runs on your machine.
+## Installing a Linux release
 
-## Building
+Download `PortMedic-linux-X.Y.Z.tar.gz` and its `.sha256` checksum from the
+[GitHub Releases page](https://github.com/bansikah22/PortMedic/releases). Verify
+and extract the archive:
+
+```bash
+sha256sum --check PortMedic-linux-X.Y.Z.tar.gz.sha256
+tar -xzf PortMedic-linux-X.Y.Z.tar.gz
+cd PortMedic-linux-X.Y.Z
+./scripts/install-desktop.sh ./portmedic-linux
+```
+
+The installer copies the release binary's desktop entry and icon into the
+current user's XDG data directories. It does not require `sudo`. Launch
+PortMedic from the applications menu or run `./portmedic-linux` directly.
+
+The release is built on Ubuntu and requires the system libraries used by the
+GTK/tray and iced window backends. On Debian or Ubuntu, install:
+
+```bash
+sudo apt install libgtk-3-0 libxkbcommon0 libx11-6 libxcb1 libwayland-client0 libxdo3
+```
+
+Library package names vary by distribution. The source-build dependency list
+below includes the development packages needed to compile the application.
+
+Pushes and pull requests that change `portmedic-linux/` trigger
+`.github/workflows/ci-linux.yml` on GitHub's `ubuntu-latest` runner. Version
+tags also trigger the Linux release workflow, which publishes the archive and
+checksum to the GitHub release.
+
+## Building from source
 
 ```bash
 cd portmedic-linux

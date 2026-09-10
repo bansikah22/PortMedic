@@ -1,6 +1,9 @@
 # PortMedic
 
 [![CI](https://github.com/bansikah22/PortMedic/actions/workflows/ci.yml/badge.svg)](https://github.com/bansikah22/PortMedic/actions/workflows/ci.yml)
+[![CI (Linux)](https://github.com/bansikah22/PortMedic/actions/workflows/ci-linux.yml/badge.svg)](https://github.com/bansikah22/PortMedic/actions/workflows/ci-linux.yml)
+[![Release](https://github.com/bansikah22/PortMedic/actions/workflows/release.yml/badge.svg)](https://github.com/bansikah22/PortMedic/actions/workflows/release.yml)
+[![Release (Linux)](https://github.com/bansikah22/PortMedic/actions/workflows/release-linux.yml/badge.svg)](https://github.com/bansikah22/PortMedic/actions/workflows/release-linux.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%2015.5%2B-lightgrey.svg)](#requirements)
 
@@ -121,6 +124,23 @@ Select the `PortMedic` scheme and press Run, or build from the command line:
 ```bash
 xcodebuild -project PortMedic.xcodeproj -scheme PortMedic build
 ```
+
+### Linux release
+
+Linux releases are published as a portable `tar.gz` on the [Releases
+page](https://github.com/bansikah22/PortMedic/releases). Extract the archive,
+build no additional Rust code, and register the application with:
+
+```bash
+tar -xzf PortMedic-linux-X.Y.Z.tar.gz
+cd PortMedic-linux-X.Y.Z
+./scripts/install-desktop.sh ./portmedic-linux
+./portmedic-linux
+```
+
+The archive includes the release binary, PortMedic icon, desktop entry, and
+installer. Linux desktop libraries such as GTK3 and X11/Wayland support must
+already be available on the system; see the Linux README for package names.
 
 ## Usage
 

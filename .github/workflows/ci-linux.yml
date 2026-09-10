@@ -65,5 +65,13 @@ jobs:
       - name: Build
         run: cargo build --verbose
 
+      - name: Build release binary
+        run: cargo build --release --verbose
+
+      - name: Validate desktop installer
+        run: |
+          sh -n scripts/install-desktop.sh
+          ./scripts/install-desktop.sh target/release/portmedic-linux
+
       - name: Test
         run: cargo test --verbose

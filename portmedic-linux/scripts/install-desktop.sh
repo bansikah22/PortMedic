@@ -8,7 +8,9 @@ icons_dir="$data_dir/icons/hicolor/256x256/apps"
 desktop_file="$applications_dir/com.portmedic.PortMedic.desktop"
 icon_source="$project_dir/assets/portmedic.png"
 desktop_source="$project_dir/com.portmedic.PortMedic.desktop"
-executable="$project_dir/target/debug/portmedic-linux"
+executable_arg=${1:-"$project_dir/target/debug/portmedic-linux"}
+executable_dir=$(CDPATH= cd -- "$(dirname -- "$executable_arg")" && pwd)
+executable="$executable_dir/$(basename -- "$executable_arg")"
 
 require_file() {
     if [ ! -f "$1" ]; then
@@ -31,7 +33,7 @@ require_executable "$executable"
 mkdir -p "$applications_dir" "$icons_dir"
 cp "$icon_source" "$icons_dir/portmedic.png"
 
-sed "s#^Exec=.*#Exec=$project_dir/target/debug/portmedic-linux#" \
+sed "s#^Exec=.*#Exec=$executable#" \
     "$desktop_source" > "$desktop_file"
 
 update-desktop-database "$applications_dir" 2>/dev/null || true
