@@ -6,8 +6,12 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Tag to build (for example v1.0.0)
+        description: Release tag to publish (for example linux-v1.0.0)
         required: true
+      source_ref:
+        description: Git ref to build from when repairing a release
+        required: true
+        default: main
 
 concurrency:
   group: release-linux-${{ github.ref }}
@@ -30,7 +34,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.source_ref || github.ref }}
 
       - name: Install system dependencies
         run: |

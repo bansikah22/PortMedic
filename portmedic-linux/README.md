@@ -133,6 +133,10 @@ Pushes and pull requests that change `portmedic-linux/` trigger
 `linux-vX.Y.Z` tags trigger the Linux release workflow, which publishes the
 archive and checksum to the GitHub release.
 
+To repair an existing release, manually run the workflow from `main`, enter
+the release tag, and leave the source ref as `main`. This uses the current
+packaging and publishing logic without moving the immutable release tag.
+
 ## Building from source
 
 ```bash
