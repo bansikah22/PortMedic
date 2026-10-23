@@ -47,7 +47,7 @@ jobs:
         run: brew install xcbeautify
 
       - name: Cache DerivedData
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/Library/Developer/Xcode/DerivedData
           key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.pbxproj') }}
